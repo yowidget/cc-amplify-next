@@ -12,6 +12,26 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
+  Customer: a
+    .model({
+      telefono: a.string().required(),
+      transacciones: a.hasMany('Transaccion','customerId'),
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  Transaccion: a
+    .model({
+      customerId: a.id(),
+      customer: a.belongsTo("Customer", "customerId"),
+      monto: a.float(),
+      establecimiento: a.string(),
+      categoria: a.string(),
+      fecha: a.string(),
+      ubicacion: a.string(),
+      tipo_establecimiento: a.string(),
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
