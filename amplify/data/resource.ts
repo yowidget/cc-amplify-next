@@ -11,18 +11,10 @@ const schema = a.schema({
     .model({
       content: a.string(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
-  Customer: a
-    .model({
-      telefono: a.string().required(),
-      transacciones: a.hasMany('Transaccion','customerId'),
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.owner()]),
 
   Transaccion: a
     .model({
-      customerId: a.id(),
-      customer: a.belongsTo("Customer", "customerId"),
       monto: a.float(),
       establecimiento: a.string(),
       categoria: a.string(),
@@ -30,8 +22,28 @@ const schema = a.schema({
       ubicacion: a.string(),
       tipo_establecimiento: a.string(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.owner()]),
+  
+  Categoria: a
+    .model({
+      nombre: a.string(),
+      preferencias: a.hasMany("Preferencia", "categoriaId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
 
+  Preferencia: a
+    .model({
+      nombre: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  PreferenciaDeclarada: a
+    .model({
+      nombre: a.string(),
+    })
+    .authorization((allow) => [allow.owner()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -39,7 +51,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
+    defaultAuthorizationMode: "userPool",
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
