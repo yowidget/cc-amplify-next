@@ -28,6 +28,7 @@ const schema = a.schema({
     .model({
       nombre: a.string(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
+      preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -42,6 +43,9 @@ const schema = a.schema({
   PreferenciaDeclarada: a
     .model({
       nombre: a.string(),
+      preferenciaId: a.id(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
     })
     .authorization((allow) => [allow.owner()]),
 });

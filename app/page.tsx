@@ -13,12 +13,25 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  const [categorias, setCategorias] = useState<Array<Schema["Categoria"]["type"]>>([]);
+  const [categorias, setCategorias] = useState<
+    Array<Schema["Categoria"]["type"]>
+  >([]);
   const [categoriaInput, setCategoriaInput] = useState<string>("");
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string | null>(null);
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string | null>(
+    null
+  );
 
-  const [preferencias, setPreferencias] = useState<Array<Schema["Preferencia"]["type"]>>([]);
+  const [preferencias, setPreferencias] = useState<
+    Array<Schema["Preferencia"]["type"]>
+  >([]);
   const [preferenciaInput, setPreferenciaInput] = useState<string>("");
+  const [selectedPreferencia, setSelectedPreferencia] = useState<
+    Schema["Preferencia"]["type"] | null
+  >(null);
+
+  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<
+    Array<Schema["PreferenciaDeclarada"]["type"]>
+  >([]);
 
   const { user, signOut } = useAuthenticator();
 
@@ -28,30 +41,46 @@ export default function App() {
     });
   }
 
-  function listPreferencias( categoriaSelect: HTMLSelectElement ) {
+  function listPreferencias(categoriaSelect: HTMLSelectElement) {
     setSelectedCategoriaId(categoriaSelect.value);
-    // client.models.Preferencia.observeQuery().subscribe({
-    //   next: (data) => {
-    //     console.log({data});
-    //     setPreferencias([...data.items])},
+    // client.models.Preferencia.list({
+    //   filter: {
+    //     categoriaId: { eq: categoriaSelect.value },
+    //   },
+    //   selectionSet: ["id", "nombre", "categoriaId", "categoria.nombre"],
+    // }).then((data) => {
+    //   console.log({ data });
+    //   // setPreferencias([...data.data]);
     // });
     client.models.Preferencia.list({
       filter: {
         categoriaId: { eq: categoriaSelect.value },
       },
     }).then((data) => {
-      console.log(data);
+      console.log("listPreferencias");
+      console.log({ data });
       setPreferencias([...data.data]);
+    });
+  }
+
+  function listPreferenciasDeclaradas() {
+    client.models.PreferenciaDeclarada.observeQuery().subscribe({
+      next: (data) => {
+        setPreferenciasDeclaradas([...data.items]);
+      },
     });
   }
 
   useEffect(() => {
     listCategorias();
-    // listPreferencias();
+    listPreferenciasDeclaradas();
   }, []);
 
   function createCategoriasFromInput() {
-    const categoriasArray = categoriaInput.split(",").map((item) => item.trim()).filter(Boolean);
+    const categoriasArray = categoriaInput
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
     categoriasArray.forEach((nombre) => {
       client.models.Categoria.create({
         nombre,
@@ -62,27 +91,54 @@ export default function App() {
 
   function createPreferenciasFromInput() {
     if (!selectedCategoriaId) {
-      alert("Por favor selecciona una categoría antes de agregar preferencias.");
+      alert(
+        "Por favor selecciona una categoría antes de agregar preferencias."
+      );
       return;
     }
 
-    const preferenciasArray = preferenciaInput.split(",").map((item) => item.trim()).filter(Boolean);
+    const preferenciasArray = preferenciaInput
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
     preferenciasArray.forEach((nombre) => {
       client.models.Preferencia.create({
         nombre,
-        categoriaId: selectedCategoriaId, // Asocia la preferencia a la categoría seleccionada
+        categoriaId: selectedCategoriaId,
       });
     });
     setPreferenciaInput("");
   }
 
+  // Función para manejar el clic en una preferencia
+  function handlePreferenciaClick(
+    preferencia: Schema["PreferenciaDeclarada"]["type"]
+  ) {
+    client.models.PreferenciaDeclarada.create({
+      nombre: preferencia.nombre,
+      preferenciaId: preferencia.id,
+      categoriaId: preferencia.categoriaId,
+    });
+    setSelectedPreferencia(preferencia);
+  }
+  function handlePreferenciaDeclaradaClick(id: string) {
+    client.models.PreferenciaDeclarada.delete({ id });
+  }
+
   return (
     <main>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-      
+
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}
-        <section style={{ flex: 1, border: "1px solid #ccc", padding: "20px", borderRadius: "8px" }}>
+        <section
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
           <h2>Agregar Categorías</h2>
           <textarea
             placeholder="Ingresa las categorías separadas por coma"
@@ -90,7 +146,10 @@ export default function App() {
             onChange={(e) => setCategoriaInput(e.target.value)}
             style={{ width: "100%", height: "100px", marginBottom: "10px" }}
           />
-          <button onClick={createCategoriasFromInput} disabled={!categoriaInput.trim()}>
+          <button
+            onClick={createCategoriasFromInput}
+            disabled={!categoriaInput.trim()}
+          >
             Crear categorías
           </button>
           <h3>Categorías existentes:</h3>
@@ -102,10 +161,16 @@ export default function App() {
         </section>
 
         {/* Sección para Preferencias */}
-        <section style={{ flex: 1, border: "1px solid #ccc", padding: "20px", borderRadius: "8px" }}>
+        <section
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
           <h2>Agregar Preferencias</h2>
-          
-          {/* Select para seleccionar una categoría */}
+
           <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
           <select
             id="categoriaSelect"
@@ -129,19 +194,75 @@ export default function App() {
             onChange={(e) => setPreferenciaInput(e.target.value)}
             style={{ width: "100%", height: "100px", marginBottom: "10px" }}
           />
-          <button onClick={createPreferenciasFromInput} disabled={!preferenciaInput.trim() || !selectedCategoriaId}>
+          <button
+            onClick={createPreferenciasFromInput}
+            disabled={!preferenciaInput.trim() || !selectedCategoriaId}
+          >
             Crear preferencias
           </button>
           <h3>Preferencias existentes:</h3>
           <ul>
             {preferencias.map((preferencia) => (
-              <li key={preferencia.id}>{preferencia.nombre}</li>
+              <li
+                key={preferencia.id}
+                style={{ cursor: "pointer", color: "blue" }}
+                onClick={() => handlePreferenciaClick(preferencia)}
+              >
+                {preferencia.nombre}
+              </li>
             ))}
           </ul>
+
+          {selectedPreferencia && (
+            <div
+              style={{
+                marginTop: "20px",
+                borderTop: "1px solid #ddd",
+                paddingTop: "10px",
+              }}
+            >
+              <h4>Detalles de Preferencia Seleccionada:</h4>
+              <p>
+                <strong>Nombre:</strong> {selectedPreferencia.nombre}
+              </p>
+              <p>
+                <strong>ID de Categoría:</strong>{" "}
+                {selectedPreferencia.categoriaId}
+              </p>
+              {/* Añade más detalles si es necesario */}
+            </div>
+          )}
         </section>
       </div>
 
-      <button onClick={signOut} style={{ marginTop: "20px" }}>Sign out</button>
+      {/* Sección para PreferenciasDeclaradas */}
+      <section
+        style={{
+          border: "1px solid #ccc",
+          padding: "20px",
+          borderRadius: "8px",
+          marginTop: "20px",
+        }}
+      >
+        <h2>Preferencias Declaradas</h2>
+        <ul>
+          {preferenciasDeclaradas.map((preferenciaDeclarada) => (
+            <li
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() =>
+                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
+              }
+              key={preferenciaDeclarada.id}
+            >
+              {preferenciaDeclarada.nombre}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <button onClick={signOut} style={{ marginTop: "20px" }}>
+        Sign out
+      </button>
     </main>
   );
 }
