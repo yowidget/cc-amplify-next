@@ -70,7 +70,15 @@ export default function App() {
       },
     });
   }
-
+  function invokeSayHello() {
+    client.queries
+      .sayHello({
+        name: "Amplify",
+      })
+      .then((response) => {
+        console.log(response);
+      });
+  }
   useEffect(() => {
     listCategorias();
     listPreferenciasDeclaradas();
@@ -128,7 +136,12 @@ export default function App() {
   return (
     <main>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-
+      <section>
+        <div>
+          <h2>Saludo</h2>
+          <button onClick={invokeSayHello}>Saludar</button>
+        </div>
+      </section>
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}
         <section
