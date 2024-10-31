@@ -15,6 +15,14 @@ const schema = a.schema({
     .returns(a.string())
     .handler(a.handler.function(sayHello))
     .authorization((allow) => [allow.authenticated()]),
+    clasificaConcepto: a
+    .query()
+    .arguments({
+      concepto: a.string(),
+    })
+    .returns(a.string())
+    .handler(a.handler.function(sayHello))
+    .authorization((allow) => [allow.authenticated()]),
   Todo: a
     .model({
       content: a.string(),
