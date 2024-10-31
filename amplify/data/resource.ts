@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { sayHello } from "../functions/say-hello/resource";
+import { transcode } from "buffer";
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
 adding a new "isDone" field as a boolean. The authorization rule below
@@ -15,7 +16,7 @@ const schema = a.schema({
     .returns(a.string())
     .handler(a.handler.function(sayHello))
     .authorization((allow) => [allow.authenticated()]),
-    clasificaConcepto: a
+  clasificaConcepto: a
     .query()
     .arguments({
       concepto: a.string(),
@@ -31,12 +32,10 @@ const schema = a.schema({
 
   Transaccion: a
     .model({
-      monto: a.float(),
-      establecimiento: a.string(),
-      categoria: a.string(),
-      fecha: a.string(),
+      concepto: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
       ubicacion: a.string(),
-      tipo_establecimiento: a.string(),
     })
     .authorization((allow) => [allow.owner()]),
 
@@ -45,6 +44,7 @@ const schema = a.schema({
       nombre: a.string(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
+      transacciones: a.hasMany("Transaccion", "categoriaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -53,6 +53,7 @@ const schema = a.schema({
       nombre: a.string(),
       categoriaId: a.id(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
+     
     })
     .authorization((allow) => [allow.authenticated()]),
 

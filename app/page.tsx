@@ -12,6 +12,23 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
+function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }) {
+  return (
+    <div>
+      <h2>{label}</h2>
+      <textarea
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+      />
+      <button onClick={onSubmit} disabled={disabled}>
+        Crear
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   const [categorias, setCategorias] = useState<
     Array<Schema["Categoria"]["type"]>
@@ -33,42 +50,45 @@ export default function App() {
     Array<Schema["PreferenciaDeclarada"]["type"]>
   >([]);
 
+  const [transacciones, setTransacciones] = useState<
+    Array<Schema["Transaccion"]["type"]>
+  >([]);
+  const [transaccionInput, setTransaccionInput] = useState<string>("");
+
   const { user, signOut } = useAuthenticator();
 
   function listCategorias() {
-    client.models.Categoria.observeQuery().subscribe({
+    const subscription = client.models.Categoria.observeQuery().subscribe({
       next: (data) => setCategorias([...data.items]),
     });
+    return subscription;
   }
 
   function listPreferencias(categoriaSelect: HTMLSelectElement) {
     setSelectedCategoriaId(categoriaSelect.value);
-    // client.models.Preferencia.list({
-    //   filter: {
-    //     categoriaId: { eq: categoriaSelect.value },
-    //   },
-    //   selectionSet: ["id", "nombre", "categoriaId", "categoria.nombre"],
-    // }).then((data) => {
-    //   console.log({ data });
-    //   // setPreferencias([...data.data]);
-    // });
     client.models.Preferencia.list({
       filter: {
         categoriaId: { eq: categoriaSelect.value },
       },
     }).then((data) => {
-      console.log("listPreferencias");
-      console.log({ data });
       setPreferencias([...data.data]);
     });
   }
 
   function listPreferenciasDeclaradas() {
-    client.models.PreferenciaDeclarada.observeQuery().subscribe({
+    const subscription = client.models.PreferenciaDeclarada.observeQuery().subscribe({
       next: (data) => {
         setPreferenciasDeclaradas([...data.items]);
       },
     });
+    return subscription;
+  }
+
+  function listTransacciones() {
+    const subscription = client.models.Transaccion.observeQuery().subscribe({
+      next: (data) => setTransacciones([...data.items]),
+    });
+    return subscription;
   }
   function invokeSayHello() {
     client.queries
@@ -89,28 +109,37 @@ export default function App() {
       });
   }
   useEffect(() => {
-    listCategorias();
-    listPreferenciasDeclaradas();
+    const categoriaSubscription = listCategorias();
+    const preferenciasDeclaradasSubscription = listPreferenciasDeclaradas();
+    const transaccionSubscription = listTransacciones();
+
+    // Cleanup suscripciones para evitar fugas de memoria
+    return () => {
+      categoriaSubscription.unsubscribe();
+      preferenciasDeclaradasSubscription.unsubscribe();
+      transaccionSubscription.unsubscribe();
+    };
   }, []);
 
-  function createCategoriasFromInput() {
+  async function createCategoriasFromInput() {
     const categoriasArray = categoriaInput
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-    categoriasArray.forEach((nombre) => {
-      client.models.Categoria.create({
-        nombre,
-      });
-    });
-    setCategoriaInput("");
+
+    try {
+      await Promise.all(
+        categoriasArray.map((nombre) => client.models.Categoria.create({ nombre }))
+      );
+      setCategoriaInput("");
+    } catch (e) {
+      console.error("Error al crear las categorías", e);
+    }
   }
 
-  function createPreferenciasFromInput() {
+  async function createPreferenciasFromInput() {
     if (!selectedCategoriaId) {
-      alert(
-        "Por favor selecciona una categoría antes de agregar preferencias."
-      );
+      alert("Por favor selecciona una categoría antes de agregar preferencias.");
       return;
     }
 
@@ -118,18 +147,37 @@ export default function App() {
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-    preferenciasArray.forEach((nombre) => {
-      client.models.Preferencia.create({
-        nombre,
-        categoriaId: selectedCategoriaId,
-      });
-    });
-    setPreferenciaInput("");
+
+    try {
+      await Promise.all(
+        preferenciasArray.map((nombre) =>
+          client.models.Preferencia.create({ nombre, categoriaId: selectedCategoriaId })
+        )
+      );
+      setPreferenciaInput("");
+    } catch (e) {
+      console.error("Error al crear las preferencias", e);
+    }
   }
 
-  // Función para manejar el clic en una preferencia
+  async function createTransaccionFromInput() {
+    const transaccionesArray = transaccionInput
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    try {
+      await Promise.all(
+        transaccionesArray.map((nombre) => client.models.Transaccion.create({ concepto: nombre }))
+      );
+      setTransaccionInput("");
+    } catch (e) {
+      console.error("Error al crear las transacciones", e);
+    }
+  }
+
   function handlePreferenciaClick(
-    preferencia: Schema["PreferenciaDeclarada"]["type"]
+    preferencia: Schema["Preferencia"]["type"]
   ) {
     client.models.PreferenciaDeclarada.create({
       nombre: preferencia.nombre,
@@ -138,8 +186,13 @@ export default function App() {
     });
     setSelectedPreferencia(preferencia);
   }
+
   function handlePreferenciaDeclaradaClick(id: string) {
     client.models.PreferenciaDeclarada.delete({ id });
+  }
+
+  function handleTransaccionDelete(id: string) {
+    client.models.Transaccion.delete({ id });
   }
 
   return (
@@ -148,8 +201,8 @@ export default function App() {
       <section>
         <div>
           <h2>Saludo</h2>
-          <button onClick={invokeSayHello}>Say Hello</button>
-          <button onClick={invokeSayHello}>Clasifica Concepto</button>
+          <button onClick={() => invokeSayHello()}>Say Hello</button>
+          <button onClick={() => invokeClasificaConcepto()}>Clasifica Concepto</button>
         </div>
       </section>
       <div style={{ display: "flex", gap: "20px" }}>
@@ -162,19 +215,14 @@ export default function App() {
             borderRadius: "8px",
           }}
         >
-          <h2>Agregar Categorías</h2>
-          <textarea
+          <InputArea
+            label="Agregar Categorías"
             placeholder="Ingresa las categorías separadas por coma"
             value={categoriaInput}
             onChange={(e) => setCategoriaInput(e.target.value)}
-            style={{ width: "100%", height: "100px", marginBottom: "10px" }}
-          />
-          <button
-            onClick={createCategoriasFromInput}
+            onSubmit={createCategoriasFromInput}
             disabled={!categoriaInput.trim()}
-          >
-            Crear categorías
-          </button>
+          />
           <h3>Categorías existentes:</h3>
           <ul>
             {categorias.map((categoria) => (
@@ -211,18 +259,14 @@ export default function App() {
             ))}
           </select>
 
-          <textarea
+          <InputArea
+            label="Agregar Preferencias"
             placeholder="Ingresa las preferencias separadas por coma"
             value={preferenciaInput}
             onChange={(e) => setPreferenciaInput(e.target.value)}
-            style={{ width: "100%", height: "100px", marginBottom: "10px" }}
-          />
-          <button
-            onClick={createPreferenciasFromInput}
+            onSubmit={createPreferenciasFromInput}
             disabled={!preferenciaInput.trim() || !selectedCategoriaId}
-          >
-            Crear preferencias
-          </button>
+          />
           <h3>Preferencias existentes:</h3>
           <ul>
             {preferencias.map((preferencia) => (
@@ -235,27 +279,9 @@ export default function App() {
               </li>
             ))}
           </ul>
-
-          {selectedPreferencia && (
-            <div
-              style={{
-                marginTop: "20px",
-                borderTop: "1px solid #ddd",
-                paddingTop: "10px",
-              }}
-            >
-              <h4>Detalles de Preferencia Seleccionada:</h4>
-              <p>
-                <strong>Nombre:</strong> {selectedPreferencia.nombre}
-              </p>
-              <p>
-                <strong>ID de Categoría:</strong>{" "}
-                {selectedPreferencia.categoriaId}
-              </p>
-              {/* Añade más detalles si es necesario */}
-            </div>
-          )}
         </section>
+
+   
       </div>
 
       {/* Sección para PreferenciasDeclaradas */}
@@ -272,9 +298,7 @@ export default function App() {
           {preferenciasDeclaradas.map((preferenciaDeclarada) => (
             <li
               style={{ cursor: "pointer", color: "red" }}
-              onClick={() =>
-                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-              }
+              onClick={() => handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)}
               key={preferenciaDeclarada.id}
             >
               {preferenciaDeclarada.nombre}
@@ -282,7 +306,36 @@ export default function App() {
           ))}
         </ul>
       </section>
-
+     {/* Sección para Transacciones */}
+     <section
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <InputArea
+            label="Agregar Transacciones"
+            placeholder="Ingresa las transacciones separadas por coma"
+            value={transaccionInput}
+            onChange={(e) => setTransaccionInput(e.target.value)}
+            onSubmit={createTransaccionFromInput}
+            disabled={!transaccionInput.trim()}
+          />
+          <h3>Transacciones existentes:</h3>
+          <ul>
+            {transacciones.map((transaccion) => (
+              <li
+                key={transaccion.id}
+                style={{ cursor: "pointer", color: "red" }}
+                onClick={() => handleTransaccionDelete(transaccion.id)}
+              >
+                {transaccion.concepto}
+              </li>
+            ))}
+          </ul>
+        </section>
       <button onClick={signOut} style={{ marginTop: "20px" }}>
         Sign out
       </button>
