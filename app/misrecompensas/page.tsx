@@ -13,6 +13,7 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function MisRecompensas() {
+  const [categoriasId, setCategoriasIds] = useState<Array<string>>([]);
   const [recompensas, setRecompensas] = useState<
     Array<Schema["Recompensa"]["type"]>
   >([]);
@@ -22,47 +23,43 @@ export default function MisRecompensas() {
 
   const { user, signOut } = useAuthenticator();
 
-  function listRecompensas() {
-    const subscription = client.models.Recompensa.observeQuery(
-        {
-            selectionSet: ['nombre', 'categoriaId', 'categoria.nombre', 'id'],
-          }
-    ).subscribe({
-      next: (data) => {
-        console.log("recompensas:",data.items);
-        setRecompensas([...data.items])},
-    });
-    return subscription;
-  }
-
-  function listPreferenciasDeclaradas() {
-    const subscription = client.models.PreferenciaDeclarada.observeQuery(
-        {
-            selectionSet: ['categoria.nombre', 'nombre','preferenciaId','categoriaId'],
-          }
-    ).subscribe({
-      next: (data) => {
-        console.log(data.items);
-        setPreferenciasDeclaradas([...data.items])},
-    });
-    return subscription;
-  }
-
-
   useEffect(() => {
-      const preferenciaSubscription = listPreferenciasDeclaradas();
-      const recompensaSubscription = listRecompensas();
+    const getPreferencias = async () => {
+      const preferencias = await client.models.PreferenciaDeclarada.list({
+        selectionSet: ["categoria.nombre", "nombre", "categoriaId", "id"],
+      });
+      console.log("preferencias: ", preferencias);
+      setPreferenciasDeclaradas(preferencias.data);
+      const categoriasIds = preferencias.data.map(
+        (preferencia) => preferencia.categoriaId
+      );
+      setCategoriasIds(categoriasIds);
+      let fieldName = "categoriaId";
+      console.log({ categoriasId });
+      let filterMembers = categoriasIds.map((item) =>
+        JSON.parse(`{"${fieldName}":{"eq":"${item}"}}`)
+      );
+      let filter = { or: filterMembers };
+      console.log({ filter });
+      const recompensas = await client.models.Recompensa.list({
+        filter,
+        selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id"],
+      });
+      console.log("recompensas: ", recompensas);
+      setRecompensas(recompensas.data);
+    };
 
-    // Cleanup suscripciones para evitar fugas de memoria
+    getPreferencias();
+
     return () => {
-      recompensaSubscription.unsubscribe();
-      preferenciaSubscription.unsubscribe();
+        setCategoriasIds([]);
+        setPreferenciasDeclaradas([]);
+        setRecompensas([]);
     };
   }, []);
 
   return (
     <main>
-
       <h1>{user?.signInDetails?.loginId}'s Recompensas</h1>
       <section
         style={{
@@ -76,10 +73,11 @@ export default function MisRecompensas() {
         <h3>Preferencias Declaradas:</h3>
         <ul>
           {preferenciasDeclaradas.map((preferencia) => (
-            <li key={preferencia.id}>{preferencia.nombre} - {preferencia.categoria.nombre} </li>
+            <li key={preferencia.id}>
+              {preferencia.nombre} - {preferencia.categoria.nombre}{" "}
+            </li>
           ))}
         </ul>
-        
       </section>
       <section
         style={{
@@ -95,7 +93,8 @@ export default function MisRecompensas() {
           {recompensas
             .filter((recompensa) =>
               preferenciasDeclaradas.some(
-                (preferencia) => preferencia.categoriaId === recompensa.categoriaId
+                (preferencia) =>
+                  preferencia.categoriaId === recompensa.categoriaId
               )
             )
             .map((recompensa) => (
