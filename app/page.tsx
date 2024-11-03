@@ -55,6 +55,11 @@ export default function App() {
   >([]);
   const [transaccionInput, setTransaccionInput] = useState<string>("");
 
+  const [recompensas, setRecompensas] = useState<
+    Array<Schema["Recompensa"]["type"]>
+  >([]);
+  const [recompensaInput, setRecompensaInput] = useState<string>("");
+
   const { user, signOut } = useAuthenticator();
 
   function listCategorias() {
@@ -90,6 +95,27 @@ export default function App() {
     });
     return subscription;
   }
+
+  function listRecompensas() {
+    const subscription = client.models.Recompensa.observeQuery().subscribe({
+      next: (data) => setRecompensas([...data.items]),
+    });
+    return subscription;
+  }
+
+  function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
+    client.models.Recompensa.update({
+      id,
+      categoriaId,
+    })
+      .then(() => {
+        console.log(`Recompensa ${id} actualizada con la categoría ${categoriaId}`);
+      })
+      .catch((e) => {
+        console.error(`Error al actualizar la recompensa ${id}`, e);
+      });
+  }
+
   function invokeSayHello() {
     client.queries
       .sayHello({
@@ -99,6 +125,7 @@ export default function App() {
         console.log(response);
       });
   }
+
   function invokeClasificaConcepto() {
     client.queries
       .clasificaConcepto({
@@ -108,16 +135,19 @@ export default function App() {
         console.log(response);
       });
   }
+
   useEffect(() => {
     const categoriaSubscription = listCategorias();
     const preferenciasDeclaradasSubscription = listPreferenciasDeclaradas();
     const transaccionSubscription = listTransacciones();
+    const recompensaSubscription = listRecompensas();
 
     // Cleanup suscripciones para evitar fugas de memoria
     return () => {
       categoriaSubscription.unsubscribe();
       preferenciasDeclaradasSubscription.unsubscribe();
       transaccionSubscription.unsubscribe();
+      recompensaSubscription.unsubscribe();
     };
   }, []);
 
@@ -173,6 +203,22 @@ export default function App() {
       setTransaccionInput("");
     } catch (e) {
       console.error("Error al crear las transacciones", e);
+    }
+  }
+
+  async function createRecompensaFromInput() {
+    const recompensasArray = recompensaInput
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    try {
+      await Promise.all(
+        recompensasArray.map((nombre) => client.models.Recompensa.create({ nombre }))
+      );
+      setRecompensaInput("");
+    } catch (e) {
+      console.error("Error al crear las recompensas", e);
     }
   }
 
@@ -280,8 +326,6 @@ export default function App() {
             ))}
           </ul>
         </section>
-
-   
       </div>
 
       {/* Sección para PreferenciasDeclaradas */}
@@ -306,36 +350,84 @@ export default function App() {
           ))}
         </ul>
       </section>
-     {/* Sección para Transacciones */}
-     <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <InputArea
-            label="Agregar Transacciones"
-            placeholder="Ingresa las transacciones separadas por coma"
-            value={transaccionInput}
-            onChange={(e) => setTransaccionInput(e.target.value)}
-            onSubmit={createTransaccionFromInput}
-            disabled={!transaccionInput.trim()}
-          />
-          <h3>Transacciones existentes:</h3>
-          <ul>
-            {transacciones.map((transaccion) => (
-              <li
-                key={transaccion.id}
-                style={{ cursor: "pointer", color: "red" }}
-                onClick={() => handleTransaccionDelete(transaccion.id)}
-              >
-                {transaccion.concepto}
-              </li>
-            ))}
-          </ul>
-        </section>
+
+      {/* Sección para Transacciones */}
+      <section
+        style={{
+          flex: 1,
+          border: "1px solid #ccc",
+          padding: "20px",
+          borderRadius: "8px",
+        }}
+      >
+        <InputArea
+          label="Agregar Transacciones"
+          placeholder="Ingresa las transacciones separadas por coma"
+          value={transaccionInput}
+          onChange={(e) => setTransaccionInput(e.target.value)}
+          onSubmit={createTransaccionFromInput}
+          disabled={!transaccionInput.trim()}
+        />
+        <h3>Transacciones existentes:</h3>
+        <ul>
+          {transacciones.map((transaccion) => (
+            <li
+              key={transaccion.id}
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() => handleTransaccionDelete(transaccion.id)}
+            >
+              {transaccion.concepto}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Sección para Recompensas */}
+      <section
+        style={{
+          flex: 1,
+          border: "1px solid #ccc",
+          padding: "20px",
+          borderRadius: "8px",
+          marginTop: "20px",
+        }}
+      >
+        <InputArea
+          label="Agregar Recompensas"
+          placeholder="Ingresa las recompensas separadas por coma"
+          value={recompensaInput}
+          onChange={(e) => setRecompensaInput(e.target.value)}
+          onSubmit={createRecompensaFromInput}
+          disabled={!recompensaInput.trim()}
+        />
+        <h3>Recompensas existentes:</h3>
+        <ul>
+          {recompensas.map((recompensa) => (
+            <li key={recompensa.id}>
+              {recompensa.nombre}
+              <div>
+                <label htmlFor={`categoriaSelect-${recompensa.id}`}>Selecciona una categoría:</label>
+                <select
+                  id={`categoriaSelect-${recompensa.id}`}
+                  value={recompensa.categoriaId ?? ""}
+                  onChange={(e) => handleRecompensaCategoriaChange(recompensa.id, e.target.value)}
+                  style={{ width: "100%", marginBottom: "10px" }}
+                >
+                  <option value="" disabled>
+                    -- Selecciona una categoría --
+                  </option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <button onClick={signOut} style={{ marginTop: "20px" }}>
         Sign out
       </button>

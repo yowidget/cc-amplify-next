@@ -97,6 +97,17 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.owner()]),
 
+  Recompensa: a
+    .model({
+      nombre: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      location: a.customType({
+        // fields can be required or optional
+        lat: a.float().required(),
+        long: a.float().required(),
+      }),
+    }).authorization((allow) => [allow.authenticated()]),
   Transaccion: a
     .model({
       concepto: a.string(),
@@ -122,6 +133,7 @@ const schema = a.schema({
       nombre: a.string(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
+      recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
       transaccionesAnalizadas: a.hasMany(
         "TransaccionesAnalizadas",
