@@ -1,10 +1,11 @@
 export function request(ctx) {
+  console.log("ctx.args", ctx.args);
     return {
       operation: "PutEvents",
       events: [
         {
           source: "amplify.orders",
-          ["detail-type"]: "OrderStatusChange",
+          ["detailType"]: "OrderStatusChange",
           detail: { ...ctx.args },
         },
       ],

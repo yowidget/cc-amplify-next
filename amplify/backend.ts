@@ -28,6 +28,27 @@ const backend = defineBackend({
   generateHaikuFunction
 });
 
+/**
+ * Add custom resources to the backend stack Notifications y Queue
+ */
+const customResourceStack = backend.createStack("MyCustomResources");
+
+new sqs.Queue(customResourceStack, "CustomQueue");
+new sns.Topic(customResourceStack, "CustomTopic");
+
+const customNotifications = new CustomNotifications(
+  backend.createStack("CustomNotifications"),
+  "CustomNotifications",
+  { sourceAddress: "arturo@molaca.com" }
+);
+
+backend.addOutput({
+  custom: {
+    topicArn: customNotifications.topic.topicArn,
+    topicName: customNotifications.topic.topicName,
+  },
+});
+// Add a policy statement to allow invoking the model
 backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
@@ -37,6 +58,8 @@ backend.generateHaikuFunction.resources.lambda.addToRolePolicy(
     ],
   })
 );
+
+
 // Create a new stack for the EventBridge data source
 const eventStack = backend.createStack("MyExternalDataSources");
 // Reference or create an EventBridge EventBus
@@ -119,23 +142,9 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
   ],
 });
 
-const customNotifications = new CustomNotifications(
-  backend.createStack("CustomNotifications"),
-  "CustomNotifications",
-  { sourceAddress: "arturo@molaca.com" }
-);
 
-backend.addOutput({
-  custom: {
-    topicArn: customNotifications.topic.topicArn,
-    topicName: customNotifications.topic.topicName,
-  },
-});
 
-const customResourceStack = backend.createStack("MyCustomResources");
 
-new sqs.Queue(customResourceStack, "CustomQueue");
-new sns.Topic(customResourceStack, "CustomTopic");
 
 const transaccionTable = backend.data.resources.tables["Transaccion"];
 const policy = new Policy(

@@ -52,9 +52,9 @@ export default function MisRecompensas() {
     getPreferencias();
 
     return () => {
-        setCategoriasIds([]);
-        setPreferenciasDeclaradas([]);
-        setRecompensas([]);
+      setCategoriasIds([]);
+      setPreferenciasDeclaradas([]);
+      setRecompensas([]);
     };
   }, []);
 
