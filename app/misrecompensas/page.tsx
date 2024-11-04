@@ -41,9 +41,16 @@ export default function MisRecompensas() {
     const getPreferencias = async () => {
       const preferencias  = await client.models.PreferenciaDeclarada.list({
         selectionSet: ["categoria.nombre", "nombre", "categoriaId", "id"],
-      })  ;
+      }) as { data: Array<{
+        id: string;
+        categoriaId: string;
+        nombre: string;
+        categoria: {
+          nombre: string;
+        };
+      }> };
       console.log("preferencias: ", preferencias);
-      //setPreferenciasDeclaradas(preferencias.data);
+      setPreferenciasDeclaradas(preferencias.data);
       const categoriasIds = preferencias.data
         .map((preferencia) => preferencia.categoriaId)
         .filter((id): id is string => id !== null);
@@ -58,9 +65,16 @@ export default function MisRecompensas() {
       const recompensas = await client.models.Recompensa.list({
         filter,
         selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id"],
-      });
+      }) as { data: Array<{
+        id: string;
+        categoriaId: string;
+        nombre: string;
+        categoria: {
+          nombre: string;
+        };
+      }> };
       console.log("recompensas: ", recompensas);
-      //setRecompensas(recompensas.data);
+      setRecompensas(recompensas.data);
     };
 
     getPreferencias();
@@ -74,6 +88,17 @@ export default function MisRecompensas() {
 
   return (
     <main>
+      <nav>
+        <div>
+          <a href="/">Inicio</a>
+        </div>
+        <div>
+          <a href="/configuracion">Configuración</a>
+        </div>
+        <div>
+          <a href="/misrecompensas">Recompensas</a>
+        </div>
+      </nav>
       <h1>{user?.signInDetails?.loginId}'s Recompensas</h1>
       <section
         style={{

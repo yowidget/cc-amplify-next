@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./../../app/app.css";
+import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
@@ -80,15 +80,16 @@ export default function App() {
   async function handleCreateOrdenClick() {
     console.log("Crear Orden");
     // const orden = await client.mutations.publishOrderToEventBridge({
-      // orderId: "12345",
-      // status: "SHIPPED",
-      // message: "Order has been shipped",
+    // orderId: "12345",
+    // status: "SHIPPED",
+    // message: "Order has been shipped",
     // });
     //console.log("Orden creada", orden);
   }
   return (
     <main>
       <h1>Transacciones</h1>
+
       <section
         style={{
           flex: 1,
@@ -97,33 +98,32 @@ export default function App() {
           borderRadius: "8px",
         }}
       >
+        <h3>Transacciones existentes:</h3>
+        <ul>
+          {transacciones.map((transaccion) => (
+            <li key={transaccion.id}>{transaccion.concepto}</li>
+          ))}
+        </ul>
         <InputArea
-          label="Agregar Transacciones"
+          label="Agregar"
           placeholder="Ingresa las transacciones separadas por coma"
           value={transaccionInput}
           onChange={(e) => setTransaccionInput(e.target.value)}
           onSubmit={createTransaccionFromInput}
           disabled={!transaccionInput.trim()}
         />
-        <h3>Transacciones existentes:</h3>
-        <ul>
-          {transacciones.map((transaccion) => (
-            <li
-              key={transaccion.id}
-             
-            >
-              {transaccion.concepto}
-            </li>
-          ))}
-        </ul>
       </section>
+
       <section>
         <h3>Ordenes</h3>
         <input type="text" placeholder="Orden" />
-        <button onClick={() => {
-          handleCreateOrdenClick();
-        }}
-        >Crear Orden</button>
+        <button
+          onClick={() => {
+            handleCreateOrdenClick();
+          }}
+        >
+          Crear Orden
+        </button>
       </section>
     </main>
   );
