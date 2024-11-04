@@ -17,16 +17,16 @@ export default function App() {
   const sendPrompt = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const { data, errors } = await client.queries.generateHaiku({
-      prompt
-    });
+    // const { data, errors } = await client.queries.generateHaiku({
+    //   prompt
+    // });
 
-    if (!errors) {
-      setAnswer(data);
-      setPrompt('');
-    } else {
-      console.log(errors);
-    }
+    // if (!errors) {
+    //   setAnswer(data);
+    //   setPrompt('');
+    // } else {
+    //   console.log(errors);
+    // }
   };
 
   return (
