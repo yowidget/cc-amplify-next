@@ -15,19 +15,33 @@ const client = generateClient<Schema>();
 export default function MisRecompensas() {
   const [categoriasId, setCategoriasIds] = useState<Array<string>>([]);
   const [recompensas, setRecompensas] = useState<
-    Array<Schema["Recompensa"]["type"]>
+  Array<{ 
+    id: string; 
+    categoriaId: string;
+    nombre: string; 
+    categoria: { 
+      nombre: string 
+    } 
+  }>
   >([]);
   const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<
-    Array<Schema["PreferenciaDeclarada"]["type"]>
+  Array<{ 
+    id: string; 
+    categoriaId: string;
+    nombre: string; 
+    categoria: { 
+      nombre: string 
+    }  
+  }>
   >([]);
 
   const { user, signOut } = useAuthenticator();
 
   useEffect(() => {
     const getPreferencias = async () => {
-      const preferencias = await client.models.PreferenciaDeclarada.list({
+      const preferencias  = await client.models.PreferenciaDeclarada.list({
         selectionSet: ["categoria.nombre", "nombre", "categoriaId", "id"],
-      });
+      })  ;
       console.log("preferencias: ", preferencias);
       //setPreferenciasDeclaradas(preferencias.data);
       const categoriasIds = preferencias.data
@@ -74,7 +88,7 @@ export default function MisRecompensas() {
         <ul>
           {preferenciasDeclaradas.map((preferencia) => (
             <li key={preferencia.id}>
-              {preferencia.nombre} - {preferencia.categoria.nombre}{" "}
+              {preferencia.nombre} - {preferencia.categoria?.nombre || "Sin categoria"}{" "}
             </li>
           ))}
         </ul>
