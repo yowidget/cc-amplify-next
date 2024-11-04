@@ -12,6 +12,8 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
+import { ChangeEvent } from "react";
+
 function InputArea({
   label,
   placeholder,
@@ -19,6 +21,13 @@ function InputArea({
   onChange,
   onSubmit,
   disabled,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit: () => void;
+  disabled: boolean;
 }) {
   return (
     <div>
@@ -70,12 +79,12 @@ export default function App() {
   }
   async function handleCreateOrdenClick() {
     console.log("Crear Orden");
-    const orden = await client.mutations.publishOrderToEventBridge({
-      orderId: "12345",
-      status: "SHIPPED",
-      message: "Order has been shipped",
-    });
-    console.log("Orden creada", orden);
+    // const orden = await client.mutations.publishOrderToEventBridge({
+      // orderId: "12345",
+      // status: "SHIPPED",
+      // message: "Order has been shipped",
+    // });
+    //console.log("Orden creada", orden);
   }
   return (
     <main>

@@ -29,10 +29,10 @@ export default function MisRecompensas() {
         selectionSet: ["categoria.nombre", "nombre", "categoriaId", "id"],
       });
       console.log("preferencias: ", preferencias);
-      setPreferenciasDeclaradas(preferencias.data);
-      const categoriasIds = preferencias.data.map(
-        (preferencia) => preferencia.categoriaId
-      );
+      //setPreferenciasDeclaradas(preferencias.data);
+      const categoriasIds = preferencias.data
+        .map((preferencia) => preferencia.categoriaId)
+        .filter((id): id is string => id !== null);
       setCategoriasIds(categoriasIds);
       let fieldName = "categoriaId";
       console.log({ categoriasId });
@@ -46,7 +46,7 @@ export default function MisRecompensas() {
         selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id"],
       });
       console.log("recompensas: ", recompensas);
-      setRecompensas(recompensas.data);
+      //setRecompensas(recompensas.data);
     };
 
     getPreferencias();

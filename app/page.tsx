@@ -12,7 +12,16 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }) {
+interface InputAreaProps {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit: () => void;
+  disabled: boolean;
+}
+
+function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }: InputAreaProps) {
   return (
     <div>
       <h2>{label}</h2>
