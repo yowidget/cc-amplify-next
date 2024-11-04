@@ -56,9 +56,20 @@ export default function App() {
     });
     return subscription;
   }
+  function listOrders() {
+    const subscription = client.subscriptions.onOrderStatusChange().subscribe({
+      next: (data) => console.log("Order received", data),
+    });
+    return subscription;
+  }
   useEffect(() => {
-    const subscription = listTransacciones();
-    return () => subscription.unsubscribe();
+    const subscriptionTransacciones = listTransacciones();
+    const subscriptionOrders = listOrders();
+
+    return () => {
+      subscriptionTransacciones.unsubscribe()
+      subscriptionOrders.unsubscribe()
+    };
   }, []);
   async function createTransaccionFromInput() {
     const transaccionesArray = transaccionInput
@@ -79,12 +90,12 @@ export default function App() {
   }
   async function handleCreateOrdenClick() {
     console.log("Crear Orden");
-    // const orden = await client.mutations.publishOrderToEventBridge({
-    // orderId: "12345",
-    // status: "SHIPPED",
-    // message: "Order has been shipped",
-    // });
-    //console.log("Orden creada", orden);
+    const orden = await client.mutations.publishOrderToEventBridge({
+      orderId: "12345",
+      status: "OrderShipped",
+      message: "Order has been shipped",
+    });
+    console.log("Orden creada", orden);
   }
   return (
     <main>
@@ -136,7 +147,6 @@ export default function App() {
           Crear Orden
         </button>
       </section>
-      
     </main>
   );
 }

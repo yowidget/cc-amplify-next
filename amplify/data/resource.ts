@@ -138,7 +138,7 @@ const schema = a.schema({
         entry: "./publishOrderFromEventBridge.js",
       })
     ),
-  onOrderFromEventBridge: a
+    onOrderStatusChange: a
     .subscription()
     .for(a.ref("publishOrderFromEventBridge"))
     .authorization((allow) => [allow.authenticated()])

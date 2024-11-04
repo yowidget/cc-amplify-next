@@ -106,7 +106,7 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
     ["detail-type"]: ["OrderStatusChange"],
     detail: {
       orderId: [{ exists: true }],
-      status: ["PENDING", "SHIPPED", "DELIVERED"],
+      status: ["OrderPending", "OrderShipped", "OrderDelivered"],
       message: [{ exists: true }],
     },
   },
