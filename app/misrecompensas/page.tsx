@@ -127,7 +127,7 @@ export default function MisRecompensas() {
           marginTop: "20px",
         }}
       >
-        <h3>Recompensas existentes:</h3>
+        <h3>Recompensas personalizadas:</h3>
         <ul>
           {recompensas
             .filter((recompensa) =>
