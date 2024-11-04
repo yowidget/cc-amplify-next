@@ -124,29 +124,29 @@ const schema = a.schema({
         entry: "./publishOrderToEventBridge.js",
       })
     ),
-  publishOrderFromEventBridge: a
-    .mutation()
-    .arguments({
-      orderId: a.id().required(),
-      status: a.string().required(),
-      message: a.string().required(),
-    })
-    .returns(a.ref("OrderStatusChange"))
-    .authorization((allow) => [ allow.authenticated()])
-    .handler(
-      a.handler.custom({
-        entry: "./publishOrderFromEventBridge.js",
-      })
-    ),
-  onOrderFromEventBridge: a
-    .subscription()
-    .for(a.ref("publishOrderFromEventBridge"))
-    .authorization((allow) => [allow.authenticated()])
-    .handler(
-      a.handler.custom({
-        entry: "./onOrderStatusChange.js",
-      })
-    ),
+  // publishOrderFromEventBridge: a
+  //   .mutation()
+  //   .arguments({
+  //     orderId: a.id().required(),
+  //     status: a.string().required(),
+  //     message: a.string().required(),
+  //   })
+  //   .returns(a.ref("OrderStatusChange"))
+  //   .authorization((allow) => [ allow.authenticated()])
+  //   .handler(
+  //     a.handler.custom({
+  //       entry: "./publishOrderFromEventBridge.js",
+  //     })
+  //   ),
+  // onOrderFromEventBridge: a
+  //   .subscription()
+  //   .for(a.ref("publishOrderFromEventBridge"))
+  //   .authorization((allow) => [allow.authenticated()])
+  //   .handler(
+  //     a.handler.custom({
+  //       entry: "./onOrderStatusChange.js",
+  //     })
+  //   ),
 });
 
 export type Schema = ClientSchema<typeof schema>;

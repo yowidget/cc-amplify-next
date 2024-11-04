@@ -67,7 +67,7 @@ mapping.node.addDependency(policy);
 
 
 // Create a new stack for the EventBridge data source
-const eventStack = backend.createStack("MyExternalDataSources");
+const eventStack = backend.createStack("EventBridgeDataSource");
 // Reference or create an EventBridge EventBus
 const eventBus = aws_events.EventBus.fromEventBusName(
   eventStack,
