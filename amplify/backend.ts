@@ -119,7 +119,7 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
       appSyncParameters: {
         graphQlOperation: `
         mutation PublishOrderFromEventBridge(
-          $message:String!,
+          $message:ID!,
           $orderId:String!,
           $status:String!
         ) {
