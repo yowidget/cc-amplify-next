@@ -61,3 +61,31 @@ body {
     font-weight: 800;
     text-decoration: none;
   }
+
+  .chip-wrapper {
+    flex-direction: row;
+    max-width: 85vw;
+    border: none;
+    background-color: transparent;
+    margin: 0 auto;
+  }
+
+  .chip {
+    text-align: center;
+    min-width: 125px;
+    border: 1px solid silver;
+    border-radius: 20px;
+    margin-right: 10px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* number of lines to show */
+            line-clamp: 1; 
+    -webkit-box-orient: vertical;    
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+  button {
+    background: rgb(212,49,16);
+    background: linear-gradient(47deg, rgba(212,49,16,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);    
+  }
