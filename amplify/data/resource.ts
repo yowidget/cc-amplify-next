@@ -1,31 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
-
-  Recompensa: a
-    .model({
-      nombre: a.string(),
-      categoriaId: a.id(),
-      categoria: a.belongsTo("Categoria", "categoriaId"),
-      location: a.customType({
-        // fields can be required or optional
-        lat: a.float().required(),
-        long: a.float().required(),
-      }),
-    })
-    .authorization((allow) => [allow.authenticated()]),
-  RecompensaAsignada: a
-    .model({
-      nombre: a.string(),
-      categoriaId: a.id(),
-      categoria: a.belongsTo("Categoria", "categoriaId"),
-      location: a.customType({
-        // fields can be required or optional
-        lat: a.float().required(),
-        long: a.float().required(),
-      }),
-    })
-    .authorization((allow) => [allow.owner()]),
   Transaccion: a
     .model({
       concepto: a.string(),
@@ -38,13 +13,6 @@ const schema = a.schema({
       }),
     })
     .authorization((allow) => [allow.owner()]),
-  TransaccionesAnalizadas: a
-    .model({
-      concepto: a.string(),
-      categoriaId: a.id(),
-      categoria: a.belongsTo("Categoria", "categoriaId"),
-    })
-    .authorization((allow) => [allow.authenticated()]),
 
   Categoria: a
     .model({
@@ -52,12 +20,7 @@ const schema = a.schema({
       preferencias: a.hasMany("Preferencia", "categoriaId"),
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
-      recompensasAsignadas: a.hasMany("RecompensaAsignada", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
-      transaccionesAnalizadas: a.hasMany(
-        "TransaccionesAnalizadas",
-        "categoriaId"
-      ),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -77,14 +40,27 @@ const schema = a.schema({
       categoria: a.belongsTo("Categoria", "categoriaId"),
     })
     .authorization((allow) => [allow.owner()]),
-      
+
+  Recompensa: a
+    .model({
+      nombre: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      location: a.customType({
+        // fields can be required or optional
+        lat: a.float().required(),
+        long: a.float().required(),
+      }),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
   OrderStatus: a.enum(["OrderPending", "OrderShipped", "OrderDelivered"]),
   OrderStatusChange: a.customType({
-    orderId: a.id().required().authorization((allow) => [allow.authenticated()]),
-    status: a.ref("OrderStatus").required().authorization((allow) => [allow.authenticated()]),
-    message: a.string().required().authorization((allow) => [allow.authenticated()]),
+    orderId: a.id().required(),
+    status: a.ref("OrderStatus").required(),
+    message: a.string().required(),
   }),
-    
+
   publishOrderToEventBridge: a
     .mutation()
     .arguments({
@@ -108,13 +84,13 @@ const schema = a.schema({
       message: a.string().required(),
     })
     .returns(a.ref("OrderStatusChange"))
-    .authorization((allow) => [ allow.authenticated( )])
+    .authorization((allow) => [allow.authenticated()])
     .handler(
       a.handler.custom({
         entry: "./publishOrderFromEventBridge.js",
       })
     ),
-    onOrderStatusChange: a
+  onOrderStatusChange: a
     .subscription()
     .for(a.ref("publishOrderFromEventBridge"))
     .authorization((allow) => [allow.authenticated()])
@@ -134,8 +110,6 @@ export const data = defineData({
     defaultAuthorizationMode: "userPool",
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
-
     },
-
   },
 });
