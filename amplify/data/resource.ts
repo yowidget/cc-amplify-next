@@ -91,7 +91,9 @@ const schema = a.schema({
       categoriaId: a.id(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
     })
-    .authorization((allow) => [allow.authenticated()]),
+    .authorization((allow) => [allow.authenticated()])
+    
+    ,
 
   PreferenciaDeclarada: a
     .model({
@@ -132,7 +134,7 @@ const schema = a.schema({
       message: a.string().required(),
     })
     .returns(a.ref("OrderStatusChange"))
-    .authorization((allow) => [ allow.authenticated()])
+    .authorization((allow) => [ allow.publicApiKey(  )])
     .handler(
       a.handler.custom({
         entry: "./publishOrderFromEventBridge.js",
@@ -158,6 +160,7 @@ export const data = defineData({
     defaultAuthorizationMode: "userPool",
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
+
     },
   },
 });
