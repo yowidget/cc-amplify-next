@@ -11,39 +11,40 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
+
 interface InputAreaProps {
-    label: string;
-    placeholder: string;
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-    onSubmit: () => void;
-    disabled: boolean;
-  }
-  
-  function InputArea({
-    label,
-    placeholder,
-    value,
-    onChange,
-    onSubmit,
-    disabled,
-  }: InputAreaProps) {
-    return (
-      <div>
-        <h2>{label}</h2>
-        <textarea
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          style={{ width: "100%", height: "100px", marginBottom: "10px" }}
-        />
-        <button onClick={onSubmit} disabled={disabled}>
-          Crear
-        </button>
-      </div>
-    );
-  }
-  
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit: () => void;
+  disabled: boolean;
+}
+
+function InputArea({
+  label,
+  placeholder,
+  value,
+  onChange,
+  onSubmit,
+  disabled,
+}: InputAreaProps) {
+  return (
+    <div>
+      <h2>{label}</h2>
+      <textarea
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+      />
+      <button onClick={onSubmit} disabled={disabled}>
+        Crear
+      </button>
+    </div>
+  );
+}
+
 export default function Configuracion() {
   const { user, signOut } = useAuthenticator();
   const [categorias, setCategorias] = useState<
@@ -185,11 +186,22 @@ export default function Configuracion() {
       .filter(Boolean);
 
     try {
-      await Promise.all(
-        recompensasArray.map((nombre) =>
-          client.models.Recompensa.create({ nombre })
-        )
-      );
+      // const { data, errors } = client.queries.categorize({prompt: recompensaInput});
+      const { data, errors } = await client.queries.categorize({
+        prompt: recompensaInput
+      });
+      if (errors) console.log(errors);
+      console.log(data?.error);
+
+      data?.categorizedData?.map((item: any) => {
+        client.models.Recompensa.create({ nombre: item.text, categoriaId: item.category });
+      });
+
+      // await Promise.all(
+      //   recompensasArray.map((nombre) =>
+      //     client.models.Recompensa.create({ nombre })
+      //   )
+      // );
       setRecompensaInput("");
     } catch (e) {
       console.error("Error al crear las recompensas", e);
@@ -222,8 +234,8 @@ export default function Configuracion() {
 
   return (
     <main>
-    <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-    <nav>
+      <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
+      <nav>
         <div>
           <a href="/">Inicio</a>
         </div>
@@ -234,170 +246,170 @@ export default function Configuracion() {
           <a href="/misrecompensas">Recompensas</a>
         </div>
       </nav>
-    <section>
-      <div>
-        <button onClick={() => invokeSayHello()}>Say Hello</button>
+      <section>
+        <div>
+          <button onClick={() => invokeSayHello()}>Say Hello</button>
 
-      </div>
-    </section>
-    <div style={{ display: "flex", gap: "20px" }}>
-      {/* Sección para Categorias */}
-      <section
-        style={{
-          flex: 1,
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-        }}
-      >
-        <InputArea
-          label="Agregar Categorías"
-          placeholder="Ingresa las categorías separadas por coma"
-          value={categoriaInput}
-          onChange={(e) => setCategoriaInput(e.target.value)}
-          onSubmit={createCategoriasFromInput}
-          disabled={!categoriaInput.trim()}
-        />
-        <h3>Categorías existentes:</h3>
-        <ul>
-          {categorias.map((categoria) => (
-            <li key={categoria.id}>{categoria.nombre}</li>
-          ))}
-        </ul>
+        </div>
       </section>
+      <div style={{ display: "flex", gap: "20px" }}>
+        {/* Sección para Categorias */}
+        <section
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <InputArea
+            label="Agregar Categorías"
+            placeholder="Ingresa las categorías separadas por coma"
+            value={categoriaInput}
+            onChange={(e) => setCategoriaInput(e.target.value)}
+            onSubmit={createCategoriasFromInput}
+            disabled={!categoriaInput.trim()}
+          />
+          <h3>Categorías existentes:</h3>
+          <ul>
+            {categorias.map((categoria) => (
+              <li key={categoria.id}>{categoria.nombre}</li>
+            ))}
+          </ul>
+        </section>
 
-      {/* Sección para Preferencias */}
+        {/* Sección para Preferencias */}
+        <section
+          style={{
+            flex: 1,
+            border: "1px solid #ccc",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <h2>Agregar Preferencias</h2>
+
+          <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
+          <select
+            id="categoriaSelect"
+            value={selectedCategoriaId ?? ""}
+            onChange={(e) => listPreferencias(e.target)}
+            style={{ width: "100%", marginBottom: "10px" }}
+          >
+            <option value="" disabled>
+              -- Selecciona una categoría --
+            </option>
+            {categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nombre}
+              </option>
+            ))}
+          </select>
+
+          <InputArea
+            label="Agregar Preferencias"
+            placeholder="Ingresa las preferencias separadas por coma"
+            value={preferenciaInput}
+            onChange={(e) => setPreferenciaInput(e.target.value)}
+            onSubmit={createPreferenciasFromInput}
+            disabled={!preferenciaInput.trim() || !selectedCategoriaId}
+          />
+          <h3>Preferencias existentes:</h3>
+          <ul>
+            {preferencias.map((preferencia) => (
+              <li
+                key={preferencia.id}
+                style={{ cursor: "pointer", color: "blue" }}
+                onClick={() => handlePreferenciaClick(preferencia)}
+              >
+                {preferencia.nombre}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      {/* Sección para PreferenciasDeclaradas */}
       <section
         style={{
-          flex: 1,
           border: "1px solid #ccc",
           padding: "20px",
           borderRadius: "8px",
+          marginTop: "20px",
         }}
       >
-        <h2>Agregar Preferencias</h2>
-
-        <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
-        <select
-          id="categoriaSelect"
-          value={selectedCategoriaId ?? ""}
-          onChange={(e) => listPreferencias(e.target)}
-          style={{ width: "100%", marginBottom: "10px" }}
-        >
-          <option value="" disabled>
-            -- Selecciona una categoría --
-          </option>
-          {categorias.map((categoria) => (
-            <option key={categoria.id} value={categoria.id}>
-              {categoria.nombre}
-            </option>
-          ))}
-        </select>
-
-        <InputArea
-          label="Agregar Preferencias"
-          placeholder="Ingresa las preferencias separadas por coma"
-          value={preferenciaInput}
-          onChange={(e) => setPreferenciaInput(e.target.value)}
-          onSubmit={createPreferenciasFromInput}
-          disabled={!preferenciaInput.trim() || !selectedCategoriaId}
-        />
-        <h3>Preferencias existentes:</h3>
+        <h2>Preferencias Declaradas</h2>
         <ul>
-          {preferencias.map((preferencia) => (
+          {preferenciasDeclaradas.map((preferenciaDeclarada) => (
             <li
-              key={preferencia.id}
-              style={{ cursor: "pointer", color: "blue" }}
-              onClick={() => handlePreferenciaClick(preferencia)}
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() =>
+                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
+              }
+              key={preferenciaDeclarada.id}
             >
-              {preferencia.nombre}
+              {preferenciaDeclarada.nombre}
             </li>
           ))}
         </ul>
       </section>
-    </div>
 
-    {/* Sección para PreferenciasDeclaradas */}
-    <section
-      style={{
-        border: "1px solid #ccc",
-        padding: "20px",
-        borderRadius: "8px",
-        marginTop: "20px",
-      }}
-    >
-      <h2>Preferencias Declaradas</h2>
-      <ul>
-        {preferenciasDeclaradas.map((preferenciaDeclarada) => (
-          <li
-            style={{ cursor: "pointer", color: "red" }}
-            onClick={() =>
-              handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-            }
-            key={preferenciaDeclarada.id}
-          >
-            {preferenciaDeclarada.nombre}
-          </li>
-        ))}
-      </ul>
-    </section>
-
-    {/* Sección para Recompensas */}
-    <section
-      style={{
-        flex: 1,
-        border: "1px solid #ccc",
-        padding: "20px",
-        borderRadius: "8px",
-        marginTop: "20px",
-      }}
-    >
-      <InputArea
-        label="Agregar Recompensas"
-        placeholder="Ingresa las recompensas separadas por coma"
-        value={recompensaInput}
-        onChange={(e) => setRecompensaInput(e.target.value)}
-        onSubmit={createRecompensaFromInput}
-        disabled={!recompensaInput.trim()}
-      />
-      <h3>Recompensas existentes:</h3>
-      <ul>
-        {recompensas.map((recompensa) => (
-          <li key={recompensa.id}>
-            {recompensa.nombre}
-            <div>
-              <label htmlFor={`categoriaSelect-${recompensa.id}`}>
-                Selecciona una categoría:
-              </label>
-              <select
-                id={`categoriaSelect-${recompensa.id}`}
-                value={recompensa.categoriaId ?? ""}
-                onChange={(e) =>
-                  handleRecompensaCategoriaChange(
-                    recompensa.id,
-                    e.target.value
-                  )
-                }
-                style={{ width: "100%", marginBottom: "10px" }}
-              >
-                <option value="" disabled>
-                  -- Selecciona una categoría --
-                </option>
-                {categorias.map((categoria) => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nombre}
+      {/* Sección para Recompensas */}
+      <section
+        style={{
+          flex: 1,
+          border: "1px solid #ccc",
+          padding: "20px",
+          borderRadius: "8px",
+          marginTop: "20px",
+        }}
+      >
+        <InputArea
+          label="Agregar Recompensas"
+          placeholder="Ingresa las recompensas separadas por coma"
+          value={recompensaInput}
+          onChange={(e) => setRecompensaInput(e.target.value)}
+          onSubmit={createRecompensaFromInput}
+          disabled={!recompensaInput.trim()}
+        />
+        <h3>Recompensas existentes:</h3>
+        <ul>
+          {recompensas.map((recompensa) => (
+            <li key={recompensa.id}>
+              {recompensa.nombre}
+              <div>
+                <label htmlFor={`categoriaSelect-${recompensa.id}`}>
+                  Selecciona una categoría:
+                </label>
+                <select
+                  id={`categoriaSelect-${recompensa.id}`}
+                  value={recompensa.categoriaId ?? ""}
+                  onChange={(e) =>
+                    handleRecompensaCategoriaChange(
+                      recompensa.id,
+                      e.target.value
+                    )
+                  }
+                  style={{ width: "100%", marginBottom: "10px" }}
+                >
+                  <option value="" disabled>
+                    -- Selecciona una categoría --
                   </option>
-                ))}
-              </select>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-    <button onClick={signOut} style={{ marginTop: "20px" }}>
-      Sign out
-    </button>
-  </main>
+      <button onClick={signOut} style={{ marginTop: "20px" }}>
+        Sign out
+      </button>
+    </main>
   );
 }
