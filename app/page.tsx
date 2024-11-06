@@ -65,10 +65,17 @@ export default function App() {
   useEffect(() => {
     const subscriptionTransacciones = listTransacciones();
     const subscriptionOrders = listOrders();
+    // Subscribe to the mutations triggered by the EventBridge rule
+    const sub = client.subscriptions.onOrderStatusChange().subscribe({
+      next: (data) => {
+        console.log(data);
+      },
+    });
 
     return () => {
-      subscriptionTransacciones.unsubscribe()
-      subscriptionOrders.unsubscribe()
+      subscriptionTransacciones.unsubscribe();
+      subscriptionOrders.unsubscribe();
+      sub.unsubscribe();
     };
   }, []);
   async function createTransaccionFromInput() {

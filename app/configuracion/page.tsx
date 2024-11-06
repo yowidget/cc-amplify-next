@@ -210,15 +210,7 @@ export default function Configuracion() {
   }
 
 
-  function invokeSayHello() {
-    client.queries
-      .sayHello({
-        name: "Amplify",
-      })
-      .then((response) => {
-        console.log(response);
-      });
-  }
+ 
 
   return (
     <main>
@@ -234,12 +226,7 @@ export default function Configuracion() {
           <a href="/misrecompensas">Recompensas</a>
         </div>
       </nav>
-    <section>
-      <div>
-        <button onClick={() => invokeSayHello()}>Say Hello</button>
-
-      </div>
-    </section>
+   
     <div style={{ display: "flex", gap: "20px" }}>
       {/* Sección para Categorias */}
       <section

@@ -1,30 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { sayHello } from "../functions/say-hello/resource";
-
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
 
 const schema = a.schema({
-  sayHello: a
-    .query()
-    .arguments({
-      name: a.string(),
-    })
-    .returns(a.string())
-    .handler(a.handler.function(sayHello))
-    .authorization((allow) => [allow.authenticated()]),
-  clasificaConcepto: a
-    .query()
-    .arguments({
-      concepto: a.string(),
-    })
-    .returns(a.string())
-    .handler(a.handler.function(sayHello))
-    .authorization((allow) => [allow.authenticated()]),
 
   Recompensa: a
     .model({
@@ -104,9 +80,9 @@ const schema = a.schema({
       
   OrderStatus: a.enum(["OrderPending", "OrderShipped", "OrderDelivered"]),
   OrderStatusChange: a.customType({
-    orderId: a.id().required(),
-    status: a.ref("OrderStatus").required(),
-    message: a.string().required(),
+    orderId: a.id().required().authorization((allow) => [allow.authenticated()]),
+    status: a.ref("OrderStatus").required().authorization((allow) => [allow.authenticated()]),
+    message: a.string().required().authorization((allow) => [allow.authenticated()]),
   }),
     
   publishOrderToEventBridge: a
