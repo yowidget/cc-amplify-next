@@ -46,7 +46,13 @@ function InputArea({
   );
 }
 export default function App() {
-  const [transacciones, setTransacciones] = useState<{ id: string; concepto: Nullable<string>; categoria: { nombre: string; id: string; createdAt: string; updatedAt: string; } }[]>([]);
+  const [transacciones, setTransacciones] = useState<
+    {
+      id: string;
+      concepto: Nullable<string>;
+      categoria: { nombre: string; id: string; createdAt: string; updatedAt: string; }
+    }[]
+  >([]);
 
   const [transaccionInput, setTransaccionInput] = useState<string>("");
 
@@ -71,16 +77,14 @@ export default function App() {
       .map((item) => transaccionesArray.push(item))
       .filter(Boolean);
 
-    client.queries.categorize({ prompt: transaccionesArray }).then(({ data: categorizedTransacciones, errors }) => {
+    client.queries.categorize({ prompt: transaccionesArray }).then(async ({ data: categorizedTransacciones, errors }) => {
       if (errors) throw console.error("Error al categorizar las transacciones", errors);
 
       if (typeof categorizedTransacciones === "string") {
         const newCategorizedTransacciones = JSON.parse(categorizedTransacciones);
-        console.log("Transacciones categorizadas", newCategorizedTransacciones);
         if (Array.isArray(newCategorizedTransacciones)) {
           newCategorizedTransacciones
             .map(({ text, category }) =>
-
               client.models.Transaccion.create({ concepto: text, categoriaId: category }).then(({ data, errors }) => {
                 if (errors) throw console.error("Error al crear la transacción", errors);
                 console.log("Transacción creada", data);
@@ -88,11 +92,12 @@ export default function App() {
             );
         }
       }
-      loadTransacciones();
+
     }).catch((e) => {
       console.error("Error al crear las transacciones", e);
     }).finally(() => {
       setTransaccionInput("");
+      loadTransacciones();
     });
 
   }
