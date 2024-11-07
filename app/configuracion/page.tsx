@@ -8,6 +8,7 @@ import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import Setup from "./setup";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -73,10 +74,14 @@ export default function Configuracion() {
   const [recompensaInput, setRecompensaInput] = useState<string>("");
 
   function listCategorias() {
-    const subscription = client.models.Categoria.observeQuery().subscribe({
-      next: (data) => setCategorias([...data.items]),
-    });
-    return subscription;
+    try {
+      const subscription = client.models.Categoria.observeQuery().subscribe({
+        next: (data) => setCategorias([...data.items]),
+      });
+      return subscription;
+    } catch (e) {
+      console.error("Error al listar las categorías", e);
+    }
   }
 
   function listPreferencias(categoriaSelect: HTMLSelectElement) {
@@ -97,17 +102,21 @@ export default function Configuracion() {
           setPreferenciasDeclaradas([...data.items]);
         },
       });
+
     return subscription;
   }
 
   function listRecompensas() {
     const subscription = client.models.Recompensa.observeQuery().subscribe({
-      next: (data) => setRecompensas([...data.items]),
+      next: (data) => setRecompensas([...data.items])
     });
+
     return subscription;
   }
 
   function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
+    console.log(`Actualizando recompensa ${id} con la categoría ${categoriaId}`);
+
     client.models.Recompensa.update({
       id,
       categoriaId,
@@ -127,7 +136,7 @@ export default function Configuracion() {
     const recompensaSubscription = listRecompensas();
     // Cleanup suscripciones para evitar fugas de memoria
     return () => {
-      categoriaSubscription.unsubscribe();
+      categoriaSubscription?.unsubscribe();
       preferenciasDeclaradasSubscription.unsubscribe();
       recompensaSubscription.unsubscribe();
     };
@@ -184,24 +193,18 @@ export default function Configuracion() {
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-
     try {
-      // const { data, errors } = client.queries.categorize({prompt: recompensaInput});
-      const { data, errors } = await client.queries.categorize({
-        prompt: recompensaInput
+      client.queries.categorize({
+        prompt: recompensasArray
+      }).then(({ data, errors }) => {
+        // if (errors) console.log(errors);
+        // console.log(data);
+        // data?.map((item: any) => {
+        //   const jsonItem = JSON.parse(item);
+        //   console.log(item);
+        //   client.models.Recompensa.create({ nombre: jsonItem.text, categoriaId: jsonItem.category });
+        // });
       });
-      if (errors) console.log(errors);
-      console.log(data?.error);
-
-      data?.categorizedData?.map((item: any) => {
-        client.models.Recompensa.create({ nombre: item.text, categoriaId: item.category });
-      });
-
-      // await Promise.all(
-      //   recompensasArray.map((nombre) =>
-      //     client.models.Recompensa.create({ nombre })
-      //   )
-      // );
       setRecompensaInput("");
     } catch (e) {
       console.error("Error al crear las recompensas", e);
@@ -232,6 +235,14 @@ export default function Configuracion() {
       });
   }
 
+  function handleElminiarRecompensa(id: string) {
+    client.models.Recompensa.delete({ id: id });
+  }
+
+  function handleEliminarCategoria(id: string) {
+    client.models.Categoria.delete({ id: id });
+  }
+
   return (
     <main>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
@@ -249,7 +260,6 @@ export default function Configuracion() {
       <section>
         <div>
           <button onClick={() => invokeSayHello()}>Say Hello</button>
-
         </div>
       </section>
       <div style={{ display: "flex", gap: "20px" }}>
@@ -273,7 +283,7 @@ export default function Configuracion() {
           <h3>Categorías existentes:</h3>
           <ul>
             {categorias.map((categoria) => (
-              <li key={categoria.id}>{categoria.nombre}</li>
+              <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
             ))}
           </ul>
         </section>
@@ -402,10 +412,13 @@ export default function Configuracion() {
                   ))}
                 </select>
               </div>
+              <button onClick={() => handleElminiarRecompensa(recompensa.id)}>Eliminar recompensa</button>
             </li>
           ))}
         </ul>
       </section>
+
+      <Setup />
 
       <button onClick={signOut} style={{ marginTop: "20px" }}>
         Sign out

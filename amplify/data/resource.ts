@@ -71,7 +71,7 @@ const schema = a.schema({
         long: a.float().required(),
       }),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.authenticated()]),
   TransaccionesAnalizadas: a
     .model({
       concepto: a.string(),
@@ -82,7 +82,7 @@ const schema = a.schema({
 
   Categoria: a
     .model({
-      nombre: a.string(),
+      nombre: a.string().required(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
@@ -111,14 +111,14 @@ const schema = a.schema({
       categoria: a.belongsTo("Categoria", "categoriaId"),
     })
     .authorization((allow) => [allow.owner()]),
-      
+
   OrderStatus: a.enum(["OrderPending", "OrderShipped", "OrderDelivered"]),
   OrderStatusChange: a.customType({
     orderId: a.id().required(),
     status: a.ref("OrderStatus").required(),
     message: a.string().required(),
   }),
-    
+
   publishOrderToEventBridge: a
     .mutation()
     .arguments({
@@ -142,7 +142,7 @@ const schema = a.schema({
       message: a.string().required(),
     })
     .returns(a.ref("OrderStatusChange"))
-    .authorization((allow) => [ allow.authenticated()])
+    .authorization((allow) => [allow.authenticated()])
     .handler(
       a.handler.custom({
         entry: "./publishOrderFromEventBridge.js",
@@ -158,19 +158,20 @@ const schema = a.schema({
       })
     ),
 
-    ResponseItem: a
+  ResponseItem: a
     .customType({
-      response: a.json(),
-      categorizedData: a.json().array(),
-      error: a.string(),
+      text: a.string().required(),
+      category: a.string().required(),
     }),
 
-    categorize: a
+  categorize: a
     .query()
-    .arguments({ prompt: a.string().required() })
-    .returns(a.ref("ResponseItem"))
-    .authorization((allow) => [allow.guest()])
+    .arguments({ prompt: a.string().required().array().required() })
+    // .returns(a.ref("ResponseItem").required().array().required())
+    .returns(a.json().required())
+    .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(categorizeFunction)),
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -191,7 +192,7 @@ Go to your frontend source code. From your client-side code, generate a
 Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
 WORK IN THE FRONTEND CODE FILE.)
 
-Using JavaScript or Next.js React Server Components, Middleware, Server 
+Using JavaScript or Next.js React Server Components, Middleware, Server
 Actions or Pages Router? Review how to generate Data clients for those use
 cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
 =========================================================================*/

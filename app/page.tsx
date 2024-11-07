@@ -7,12 +7,13 @@ import "./app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
-import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
 import { ChangeEvent } from "react";
+import { a } from "@aws-amplify/backend";
+import { Nullable } from "@aws-amplify/data-schema";
 
 function InputArea({
   label,
@@ -45,37 +46,55 @@ function InputArea({
   );
 }
 export default function App() {
-  const [transacciones, setTransacciones] = useState<
-    Array<Schema["Transaccion"]["type"]>
-  >([]);
+  const [transacciones, setTransacciones] = useState<{ id: string; concepto: Nullable<string>; categoria: { nombre: string; id: string; createdAt: string; updatedAt: string; } }[]>([]);
+
   const [transaccionInput, setTransaccionInput] = useState<string>("");
 
-  function listTransacciones() {
-    const subscription = client.models.Transaccion.observeQuery().subscribe({
-      next: (data) => setTransacciones([...data.items]),
-    });
-    return subscription;
-  }
   useEffect(() => {
-    const subscription = listTransacciones();
-    return () => subscription.unsubscribe();
+    loadTransacciones();
   }, []);
+
+  async function loadTransacciones() {
+    const { data, errors } = await client.models.Transaccion.list(
+      { selectionSet: ['id', 'concepto', 'categoria.*'] }
+    );
+    if (errors) throw console.error("Error al obtener las transacciones", errors);
+    setTransacciones(data);
+  }
+
+
+
   async function createTransaccionFromInput() {
-    const transaccionesArray = transaccionInput
+    const transaccionesArray: Schema["categorize"]["args"]["prompt"] = []
+    transaccionInput
       .split(",")
-      .map((item) => item.trim())
+      .map((item) => transaccionesArray.push(item))
       .filter(Boolean);
 
-    try {
-      await Promise.all(
-        transaccionesArray.map((nombre) =>
-          client.models.Transaccion.create({ concepto: nombre })
-        )
-      );
-      setTransaccionInput("");
-    } catch (e) {
+    client.queries.categorize({ prompt: transaccionesArray }).then(({ data: categorizedTransacciones, errors }) => {
+      if (errors) throw console.error("Error al categorizar las transacciones", errors);
+
+      if (typeof categorizedTransacciones === "string") {
+        const newCategorizedTransacciones = JSON.parse(categorizedTransacciones);
+        console.log("Transacciones categorizadas", newCategorizedTransacciones);
+        if (Array.isArray(newCategorizedTransacciones)) {
+          newCategorizedTransacciones
+            .map(({ text, category }) =>
+
+              client.models.Transaccion.create({ concepto: text, categoriaId: category }).then(({ data, errors }) => {
+                if (errors) throw console.error("Error al crear la transacción", errors);
+                console.log("Transacción creada", data);
+              })
+            );
+        }
+      }
+      loadTransacciones();
+    }).catch((e) => {
       console.error("Error al crear las transacciones", e);
-    }
+    }).finally(() => {
+      setTransaccionInput("");
+    });
+
   }
   async function handleCreateOrdenClick() {
     console.log("Crear Orden");
@@ -86,6 +105,15 @@ export default function App() {
     // });
     //console.log("Orden creada", orden);
   }
+
+  async function handleDeleteTransaccion(id: string) {
+    client.models.Transaccion.delete({ id }).then(({ data, errors }) => {
+      if (errors) throw console.error("Error al eliminar la transacción", errors);
+      console.log("Transacción eliminada", id)
+      loadTransacciones();
+    });
+  }
+
   return (
     <main>
       <nav>
@@ -110,11 +138,27 @@ export default function App() {
         }}
       >
         <h3>Transacciones existentes:</h3>
-        <ul>
-          {transacciones.map((transaccion) => (
-            <li key={transaccion.id}>{transaccion.concepto}</li>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Categoría</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transacciones.map((transaccion) => (
+              <tr key={transaccion.id}>
+                <td>{transaccion.concepto}</td>
+                <td>{transaccion.categoria?.nombre}</td>
+                <td>
+                  <button onClick={() => handleDeleteTransaccion(transaccion.id)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
         <InputArea
           label="Agregar"
           placeholder="Ingresa las transacciones separadas por coma"
@@ -136,7 +180,7 @@ export default function App() {
           Crear Orden
         </button>
       </section>
-      
+
     </main>
   );
 }
