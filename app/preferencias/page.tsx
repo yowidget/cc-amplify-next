@@ -8,9 +8,39 @@ import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import { categories, categoryIcons } from './categories';
+import { CategoryListProps } from './model';
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
+
+const CategoryList = ({ categories }: CategoryListProps) => {
+  return (
+    <div>
+    <h2>Selecciona tus preferencias</h2>
+    {Object.values(categories).map((category)=> (
+      <section
+        style={{
+          borderRadius: "8px",
+          minWidth: "90vw",
+        }}>
+        <div key={category.id}>
+          <h4>{categoryIcons[category.id as keyof typeof categoryIcons]} {category.nombre}</h4>
+          <ul className="chip-wrapper">
+            {category.preferencias.map((preferencia,index)=> (
+              <li 
+              key={`${category.id}-${index}`}
+              className="chip">{preferencia}</li>  
+            ))}
+          </ul>
+        </div>
+      </section>
+
+    ))}
+    </div>        
+  )
+}
+
 interface InputAreaProps {
   label: string;
   placeholder: string;
@@ -228,53 +258,15 @@ export default function Configuracion() {
       </button>
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para preferencias */}
-        <section
-          style={{
-            borderRadius: "8px",
-            margin: "1rem",
-            minWidth: "90vw",
-          }}
-        >
-          <h2>Selecciona tus preferencias</h2>
-          <h4>Essentials</h4>
-          <ul className="chip-wrapper">
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>          
-          </ul>
-          <h4>Food & Drink</h4>
-          <ul className="chip-wrapper">
-            <li className="chip">🌭 hot dog flavor water</li>
-            <li className="chip">🍔 B King</li>
-            <li className="chip">🍜 Wok</li>
-            <li className="chip">🥑 Wallgreens</li>
-            <li className="chip">🏡 Walmart</li>
-            <li className="chip">🏡 Phone</li>          
-          </ul>
-          <h4>Health & Wellness</h4>
-          <ul className="chip-wrapper">
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>          
-          </ul>          
-          <h4>Miscellaneous</h4>
-          <ul className="chip-wrapper">
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>
-            <li className="chip">🏡 Rent</li>
-            <li className="chip">🏡 Utilities</li>
-            <li className="chip">🏡 Phone</li>          
-          </ul>          
-        </section>
+        <CategoryList categories={categories} />
       </div>
-      <button onClick={signOut} style={{ margin: "1rem" }}>
+      <button onClick={signOut} style={{
+        margin: "1rem",
+        position: "fixed",
+        bottom: 0,
+        width: "80vw",
+        display: "block",
+        }}>
         Next
       </button>        
     </main>
