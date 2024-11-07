@@ -17,7 +17,6 @@ import { aws_events } from "aws-cdk-lib";
 // import * as sqs from "aws-cdk-lib/aws-sqs";
 
 // Functions
-import { sayHello } from "./functions/say-hello/resource";
 import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 
 //DynamoDbStream
@@ -26,7 +25,6 @@ import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 const backend = defineBackend({
   auth,
   data,
-  sayHello,
   myDynamoDBFunction,
 });
 
@@ -119,14 +117,14 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
       appSyncParameters: {
         graphQlOperation: `
         mutation PublishOrderFromEventBridge(
-          $orderId: String!
-          $status: String!
-          $message: String!
+          $message:String!,
+          $orderId:ID!,
+          $status:String!
         ) {
-          publishOrderFromEventBridge(orderId: $orderId, status: $status, message: $message) {
+          publishOrderFromEventBridge(message:$message,orderId:$orderId,status:$status) {
+            message
             orderId
             status
-            message
           }
         }`,
       },

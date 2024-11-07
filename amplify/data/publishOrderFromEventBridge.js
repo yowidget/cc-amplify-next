@@ -1,4 +1,5 @@
 export function request(ctx) {
+    console.log('ctx', ctx)
     return {
       payload: ctx.arguments,
     };

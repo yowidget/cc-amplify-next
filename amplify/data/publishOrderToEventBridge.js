@@ -1,5 +1,4 @@
 export function request(ctx) {
-  console.log(ctx.args);
   return {
     operation: "PutEvents",
     events: [
