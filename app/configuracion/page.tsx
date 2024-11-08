@@ -173,11 +173,19 @@ export default function Configuracion() {
       console.error("Error al declarar la preferencia", e);
     }).finally(() => {
       setSelectedPreferencia(preferencia);
+      listPreferenciasDeclaradas();
     });
   }
 
   function handlePreferenciaDeclaradaClick(id: string) {
-    client.models.PreferenciaDeclarada.delete({ id });
+    client.models.PreferenciaDeclarada.delete({ id }).then(() => {
+      console.log("Preferencia declarada eliminada");
+
+      listPreferenciasDeclaradas();
+    }).catch((e) => {
+      console.error("Error al eliminar la preferencia declarada", e);
+    }
+    );
   }
 
 
