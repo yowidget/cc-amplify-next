@@ -101,15 +101,7 @@ export default function App() {
     });
 
   }
-  async function handleCreateOrdenClick() {
-    console.log("Crear Orden");
-    const orden = await client.mutations.publishOrderToEventBridge({
-      orderId: "12345",
-      status: "OrderShipped",
-      message: "Order has been shipped",
-    });
-    console.log("Orden creada", orden);
-  }
+
 
   async function handleDeleteTransaccion(id: string) {
     client.models.Transaccion.delete({ id }).then(({ data, errors }) => {
@@ -174,17 +166,7 @@ export default function App() {
         />
       </section>
 
-      <section>
-        <h3>Ordenes</h3>
-        <input type="text" placeholder="Orden" />
-        <button
-          onClick={() => {
-            handleCreateOrdenClick();
-          }}
-        >
-          Crear Orden
-        </button>
-      </section>
+
     </main>
   );
 }
