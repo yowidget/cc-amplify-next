@@ -1,5 +1,7 @@
 import { util, runtime } from '@aws-appsync/utils'
 
+
+
 export function request(ctx) {
 	console.log('the context identity', ctx.identity)
 	if (!ctx.prev.result.id) {
@@ -7,8 +9,9 @@ export function request(ctx) {
 			message: 'error saving recording to database, no message scheduled',
 		})
 	}
+	console.log('the context prev', ctx.prev)
 	return {
-		resourcePath: `/schedules/${ctx.prev.result.title}`,
+		resourcePath: `/schedules/${ctx.prev.result.concepto}-${ctx.prev.result.id}`,
 		method: 'POST',
 		params: {
 			headers: {
@@ -16,8 +19,8 @@ export function request(ctx) {
 			},
 			body: {
 				ActionAfterCompletion: 'DELETE',
-				ScheduleExpression: `at(${ctx.prev.result.deliveryDate})`,
-				ScheduleExpressionTimezone: ctx.prev.result.timezone,
+				ScheduleExpression: `at(${ctx.prev.result.deliverDate})`,
+				ScheduleExpressionTimezone:`${ctx.prev.result.userTimeZone}`,
 				ClientToken: util.autoId(),
 				FlexibleTimeWindow: {
 					Mode: 'OFF',
@@ -26,8 +29,8 @@ export function request(ctx) {
 					Arn: ctx.env.SCHEDULE_FUNCTION_ARN,
 					RoleArn: ctx.env.SCHEDULE_FUNCTION_ROLE_ARN,
 					Input: JSON.stringify({
-						messageId: ctx.prev.result.id,
-						userEmail: ctx.identity.claims.email,
+						transaccionId: ctx.prev.result.id,
+						userEmail: ctx.prev.result.email,
 					}),
 				},
 			},
@@ -36,6 +39,6 @@ export function request(ctx) {
 }
 export function response(ctx) {
 	const parsedBody = JSON.parse(ctx.result.body)
-
+	console.log('parsedBody', parsedBody)
 	return { message: 'message successfully scheduled' }
 }

@@ -7,10 +7,12 @@ import "./app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
-
+const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	
 import { ChangeEvent } from "react";
 import { a } from "@aws-amplify/backend";
 import { Nullable } from "@aws-amplify/data-schema";
@@ -46,6 +48,7 @@ function InputArea({
   );
 }
 export default function App() {
+  const { user, signOut } = useAuthenticator();
   const [transacciones, setTransacciones] = useState<
     {
       id: string;
@@ -93,18 +96,27 @@ export default function App() {
           );
           if (Array.isArray(newCategorizedTransacciones)) {
             newCategorizedTransacciones.map(({ text, category }) => {
-
-              client.mutations.createTransaccionSchedule({
-                concepto: text,
-                categoriaId: category,
-              }).then(({ data, errors }) => {
-                if (errors)
-                  throw console.error
-                    ("Error al crear la transacción", errors);
-                console.log("Transacción creada", data);
-              }
-              );
-
+              const deliverDate = Date.now() + (1 * 60 * 1000)-(6*60*60*1000);
+              const deliverDateISO = new Date(deliverDate)
+                .toISOString()
+                .substring(0, 19);
+              console.log({ deliverDateISO });
+              client.mutations
+                .createTransaccionSchedule({
+                  concepto: text,
+                  categoriaId: category,
+                  deliverDate: deliverDateISO,
+                  userTimeZone,
+                  email: user?.signInDetails?.loginId,
+                })
+                .then(({ data, errors }) => {
+                  if (errors)
+                    throw console.error(
+                      "Error al crear la transacción",
+                      errors
+                    );
+                  console.log("Transacción creada", data);
+                });
 
               // client.models.Transaccion.create({
               //   concepto: text,
@@ -114,8 +126,6 @@ export default function App() {
               //     throw console.error("Error al crear la transacción", errors);
               //   console.log("Transacción creada", data);
               // });
-
-
             });
           }
         }

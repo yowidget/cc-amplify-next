@@ -32,12 +32,19 @@ const schema = a.schema({
     .arguments({
       concepto: a.string().required(),
       categoriaId: a.id().required(),
+      deliverDate: a.string().required(),
+      email: a.string().required(),
+      userTimeZone: a.string().required(),
     })
     .returns(a.json().required())
     .handler([
       a.handler.custom({
         entry: "./createTransaccion.js",
         dataSource: a.ref("Transaccion"),
+      }),
+      a.handler.custom({
+        entry: './scheduleMessage.js',
+        dataSource: 'ebSchedulerDS',
       }),
     ])
     .authorization((allow) => [allow.authenticated()]),

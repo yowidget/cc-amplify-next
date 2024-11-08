@@ -11,7 +11,7 @@ async function sendEmail(subject: string, body: string) {
       // Destination
       ToAddresses: [
         // EmailAddressList
-        "arturo.velez@walllia.io",
+        "velez.arturo@gmail.com",
       ],
     },
     ReplyToAddresses: ["arturo@molaca.com"],
@@ -64,11 +64,11 @@ export const handler: DynamoDBStreamHandler = async (event) => {
         try {
 
            logger.info(`Sending email`);    
-          // const sesResult = await sendEmail(
-          //   "New Transacción",
-          //   JSON.stringify(record.dynamodb?.NewImage)
-          // );
-          // logger.info(`Sending email result: ${JSON.stringify(sesResult)}`);
+          const sesResult = await sendEmail(
+            "New Transacción",
+            JSON.stringify(record.dynamodb?.NewImage)
+          );
+          logger.info(`Sending email result: ${JSON.stringify(sesResult)}`);
 
           // const input = { // CreateEmailIdentityRequest
           //   EmailIdentity: "arturo.velez@wallia.io", // required
