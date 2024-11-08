@@ -73,7 +73,9 @@ export default function Configuracion() {
 
   function listCategorias() {
     const subscription = client.models.Categoria.observeQuery().subscribe({
-      next: (data) => setCategorias([...data.items]),
+      next: (data) => {
+        console.log([...data.items]);
+        setCategorias([...data.items])},
     });
     return subscription;
   }
@@ -85,6 +87,7 @@ export default function Configuracion() {
         categoriaId: { eq: categoriaSelect.value },
       },
     }).then((data) => {
+      console.log([...data.data]);
       setPreferencias([...data.data]);
     });
   }

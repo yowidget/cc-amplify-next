@@ -87,7 +87,12 @@ export default function App() {
     try {
       await Promise.all(
         transaccionesArray.map((nombre) =>
-          client.models.Transaccion.create({ concepto: nombre })
+        {
+          client.mutations.createTransaccionSchedule({
+            concepto: nombre
+          })  
+          //client.models.Transaccion.create({ concepto: nombre })
+          }
         )
       );
       setTransaccionInput("");
