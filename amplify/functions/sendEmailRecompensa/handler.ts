@@ -4,7 +4,7 @@ const client = new SESv2Client({ region: process.env.REGION });
 async function sendEmail(subject: string, body: string, email: string) {
   const input = {
     // SendEmailRequest
-    FromEmailAddress: "arturo@molaca.com",
+    FromEmailAddress: "capital@molaca.com",
     // FromEmailAddressIdentityArn: "STRING_VALUE",
     Destination: {
       // Destination
