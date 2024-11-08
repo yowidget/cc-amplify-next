@@ -1,6 +1,6 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource.js";
-import { data } from "./data/resource.js";
+import { data,  MODEL_ID, categorizeFunction } from './data/resource.js';
 import { Stack } from "aws-cdk-lib";
 import {
   Policy,
@@ -22,11 +22,16 @@ import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 //DynamoDbStream
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 
+//Storage
+import { storage } from "./storage/resource";
+
 const backend = defineBackend({
   auth,
   data,
   myDynamoDBFunction,
-});
+  categorizeFunction,
+  storage
+}); 
 
 
 //Para DynamoDBStream
@@ -93,7 +98,7 @@ const eventBusRole = new Role(eventStack, "AppSyncInvokeRole", {
 // Create an EventBridge rule to route events to the AppSync API
 const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
   eventBusName: eventBus.eventBusName,
-  name: "broadcastOrderStatusChange",
+  name: "broadcastOrderStatusChange_sandbox_2",
   eventPattern: {
     source: ["amplify.orders"],
     /* The shape of the event pattern must match EventBridge's event message structure.
@@ -143,3 +148,13 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
     },
   ],
 });
+
+backend.categorizeFunction.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["bedrock:InvokeModel"],
+    resources: [
+      `arn:aws:bedrock:*::foundation-model/${MODEL_ID}`,
+    ],
+  })
+);
