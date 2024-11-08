@@ -23,12 +23,16 @@ import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 //DynamoDbStream
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 
+//Storage
+import { storage } from "./storage/resource";
+
 const backend = defineBackend({
   auth,
   data,
   sayHello,
   myDynamoDBFunction,
-  categorizeFunction
+  categorizeFunction,
+  storage
 });
 
 

@@ -172,6 +172,12 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(categorizeFunction)),
 
+    Image: a
+    .model({
+      name: a.string().required(),
+      url: a.string().required(),
+    })
+
 });
 
 export type Schema = ClientSchema<typeof schema>;

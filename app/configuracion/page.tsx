@@ -145,7 +145,20 @@ export default function Configuracion() {
     }
   }
 
+  function listCategorias() {
+    try {
+      const subscription = client.models.Categoria.observeQuery().subscribe({
+        next: (data) => setCategorias([...data.items]),
+      });
+      return subscription;
+    } catch (e) {
+      console.error("Error al listar las categorías", e);
+    }
+  }
 
+  useEffect(() => {
+    listCategorias();
+  }, []);
 
 
 
