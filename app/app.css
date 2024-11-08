@@ -1,17 +1,82 @@
+:root {
+  --primary-100:#2E8B57;
+  --primary-200:#61bc84;
+  --primary-300:#c6ffe6;
+  --accent-100:#8FBC8F;
+  --accent-200:#345e37;
+  --text-100:#FFFFFF;
+  --text-200:#e0e0e0;
+  --bg-100:#1E1E1E;
+  --bg-200:#2d2d2d;
+  --bg-300:#454545;
+  }
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
 body {
     margin: 0;
     display: flex;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    width: 100%;
     justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: var(--bg-100);
+    color: var(--text-100);
   }
   
   main {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    padding: 40px 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
   }
+  .header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+    background-color: var(--bg-200);
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    max-width: 800px;
+    background-color: var(--bg-200);
+  }
+
+  .navbar-item a  {
+    transition: color 0.25s;
+    color: var(--text-100);
+  }
+  .navbar-item a:hover {
+    color: var(--accent-100);
+  }
+  /* .navbar-item a:visited {
+    color: var(--text-100);
+  } */
+
+  .footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 32px 16px;
+    gap: 16px;
+    background-color: var(--bg-200);
+  }
+
   
   button {
     border-radius: 8px;
@@ -20,13 +85,18 @@ body {
     font-size: 1em;
     font-weight: 500;
     font-family: inherit;
-    background-color: #1a1a1a;
+    background-color: var(--bg-300);
+    color: var(--text-100);
     cursor: pointer;
-    transition: border-color 0.25s;
+    transition: all 0.25s;
     color: white;
   }
   button:hover {
-    border-color: #646cff;
+    background-color: var(--accent-200);
+    border-color: var(--accent-100);
+  }
+  button:active {
+    transform: scale(0.98);
   }
   button:focus,
   button:focus-visible {
@@ -48,7 +118,7 @@ body {
     overflow: auto;
   }
   
-  li {
+  /* li {
     background-color: white;
     padding: 8px;
   }
@@ -56,8 +126,8 @@ body {
   li:hover {
     background: #dadbf9;
   }
-  
+  */
   a {
     font-weight: 800;
     text-decoration: none;
-  }
+  } 

@@ -98,7 +98,7 @@ export default function RecompensasPage() {
   };
 
   return (
-    <main className="recompensas-page">
+    <>
       {/* Buscador */}
       <input
         type="text"
@@ -132,13 +132,13 @@ export default function RecompensasPage() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>{selectedRecompensa.nombre}</h3>
-            <p>{selectedRecompensa.detalles}</p>
-            <p>Fecha de caducidad: {selectedRecompensa.fechaCaducidad}</p>
+            {/* <p>{selectedRecompensa.detalles}</p> */}
+            {/* <p>Fecha de caducidad: {selectedRecompensa.fechaCaducidad}</p> */}
             <p>{selectedRecompensa.terminos}</p>
             <button onClick={handleCloseModal}>Cerrar</button>
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }
