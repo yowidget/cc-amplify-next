@@ -165,7 +165,7 @@ export default function Recompensas() {
                     <li key={recompensa.id}>
                         {recompensa.nombre}
                         <div>
-                            <select
+                            {/* <select
                                 id={`categoriaSelect-${recompensa.id}`}
                                 value={recompensa.categoria.id ?? ""}
                                 onChange={(e) =>
@@ -184,7 +184,7 @@ export default function Recompensas() {
                                         {categoria.nombre}
                                     </option>
                                 ))}
-                            </select>
+                            </select> */}
                         </div>
                         <button onClick={() => handleElminiarRecompensa(recompensa.id)}>Eliminar recompensa</button>
                     </li>

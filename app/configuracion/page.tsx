@@ -73,9 +73,6 @@ export default function Configuracion() {
   >([]);
 
 
-
-
-
   function listPreferencias(categoriaSelect: HTMLSelectElement) {
     setSelectedCategoriaId(categoriaSelect.value);
     client.models.Preferencia.list({
@@ -88,7 +85,11 @@ export default function Configuracion() {
     });
   }
 
-
+  function listPreferenciasDeclaradas() {
+    client.models.PreferenciaDeclarada.list().then((data) => {
+      setPreferenciasDeclaradas([...data.data]);
+    });
+  }
 
   // function listRecompensas() {
   //   const subscription = client.models.Recompensa.observeQuery().subscribe({
@@ -162,31 +163,45 @@ export default function Configuracion() {
 
   useEffect(() => {
     listCategorias();
+    listPreferenciasDeclaradas();
   }, []);
-
-
 
   function handlePreferenciaClick(preferencia: Schema["Preferencia"]["type"]) {
     client.models.PreferenciaDeclarada.create({
       nombre: preferencia.nombre,
       preferenciaId: preferencia.id,
       categoriaId: preferencia.categoriaId,
+    }).then(() => {
+      console.log("Preferencia declarada asignada");
+    }).catch((e) => {
+      console.error("Error al declarar la preferencia", e);
+    }).finally(() => {
+      setSelectedPreferencia(preferencia);
+      listPreferenciasDeclaradas();
     });
-    setSelectedPreferencia(preferencia);
   }
 
   function handlePreferenciaDeclaradaClick(id: string) {
-    client.models.PreferenciaDeclarada.delete({ id });
+    client.models.PreferenciaDeclarada.delete({ id }).then(() => {
+      console.log("Preferencia declarada eliminada");
+
+      listPreferenciasDeclaradas();
+    }).catch((e) => {
+      console.error("Error al eliminar la preferencia declarada", e);
+    }
+    );
   }
 
 
- 
+
 
 
 
   function handleEliminarCategoria(id: string) {
     client.models.Categoria.delete({ id: id });
   }
+
+
 
   return (
     <main>
@@ -202,7 +217,7 @@ export default function Configuracion() {
           <a href="/misrecompensas">Recompensas</a>
         </div>
       </nav>
-      
+
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}
         <section
@@ -222,11 +237,13 @@ export default function Configuracion() {
             disabled={!categoriaInput.trim()}
           />
           <h3>Categorías existentes:</h3>
-          <ul>
-            {categorias.map((categoria) => (
-              <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
-            ))}
-          </ul>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <ul>
+              {categorias.map((categoria) => (
+                <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         {/* Sección para Preferencias */}
