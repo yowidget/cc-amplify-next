@@ -107,7 +107,7 @@ export default function App() {
                   categoriaId: category,
                   deliverDate: deliverDateISO,
                   userTimeZone,
-                  email: user?.signInDetails?.loginId,
+                  email: user?.signInDetails?.loginId || "",
                 })
                 .then(({ data, errors }) => {
                   if (errors)
