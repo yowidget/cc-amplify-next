@@ -176,7 +176,7 @@ export default function Configuracion() {
   }
 
 
- 
+
 
 
 
@@ -198,7 +198,7 @@ export default function Configuracion() {
           <a href="/misrecompensas">Recompensas</a>
         </div>
       </nav>
-      
+
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}
         <section
@@ -218,11 +218,13 @@ export default function Configuracion() {
             disabled={!categoriaInput.trim()}
           />
           <h3>Categorías existentes:</h3>
-          <ul>
-            {categorias.map((categoria) => (
-              <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
-            ))}
-          </ul>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <ul>
+              {categorias.map((categoria) => (
+                <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         {/* Sección para Preferencias */}
