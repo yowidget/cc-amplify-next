@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import "./../../app/app.css";
@@ -9,34 +9,73 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { categories, categoryIcons } from './categories';
-import { CategoryListProps } from './model';
+import { CategoryListProps, SelectedPreferences, GroupedPreferences } from './model';
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-const CategoryList = ({ categories }: CategoryListProps) => {
+const CategoryList = ({ categories, onPreferencesChange }: CategoryListProps) => {
+  const [selectedPreferences, setSelectedPreferences] = useState<SelectedPreferences[]>([]);
+  // Handle click on preference chip
+  const handlePreferenceClick = useCallback((categoryId: string, preference: string) => {
+    setSelectedPreferences(prev => {
+      // Check if the preference is already selected
+      const existingIndex = prev.findIndex(
+        item => item.categoryId === categoryId && item.preference === preference
+      );
+
+      let newSelected: SelectedPreferences[];
+
+      if (existingIndex >= 0) {
+        // Remove if already selected
+        newSelected = prev.filter((_, index) => index !== existingIndex);
+      } else {
+        // Add if not selected
+        newSelected = [...prev, { categoryId, preference }];
+      }
+
+      // Call the callback if provided
+      onPreferencesChange?.(newSelected);
+      
+      return newSelected;
+    });
+  }, [onPreferencesChange]);
+
+  // Check if a preference is selected
+  const isPreferenceSelected = useCallback((categoryId: string, preference: string): boolean => {
+    return selectedPreferences.some(
+      item => item.categoryId === categoryId && item.preference === preference
+    );
+  }, [selectedPreferences]);
+  
   return (
     <div>
-    <h2>Selecciona tus preferencias</h2>
-    {Object.values(categories).map((category)=> (
-      <section
-        style={{
-          borderRadius: "8px",
-          minWidth: "90vw",
-        }}>
-        <div key={category.id}>
-          <h4>{categoryIcons[category.id as keyof typeof categoryIcons]} {category.nombre}</h4>
-          <ul className="chip-wrapper">
-            {category.preferencias.map((preferencia,index)=> (
-              <li 
-              key={`${category.id}-${index}`}
-              className="chip">{preferencia}</li>  
-            ))}
-          </ul>
-        </div>
-      </section>
-
-    ))}
+      <h2>Selecciona lo que más te gusta</h2>
+      {Object.values(categories).map((category)=> (
+        <section
+          style={{
+            borderRadius: "8px",
+            minWidth: "90vw",
+          }}>
+          <div key={category.id}>
+            <h4>{categoryIcons[category.id as keyof typeof categoryIcons]} {category.nombre}</h4>
+            <ul className="chip-wrapper">
+              {category.preferencias.map((preferencia,index)=> {
+                const isSelected = isPreferenceSelected(category.id, preferencia);
+                return(
+                  <li
+                    onClick={() => handlePreferenceClick(category.id, preferencia)} 
+                    key={`${category.id}-${index}`}
+                    className={`chip ${isSelected ? 'selected' : ''}`}
+                  >
+                    {preferencia}
+                  </li>
+                )  
+              })}
+            </ul>
+          </div>
+        </section>
+      ))}
     </div>        
   )
 }
@@ -240,16 +279,6 @@ export default function Configuracion() {
     client.models.PreferenciaDeclarada.delete({ id });
   }
 
-  function invokeSayHello() {
-    client.queries
-      .sayHello({
-        name: "Amplify",
-      })
-      .then((response) => {
-        console.log(response);
-      });
-  }
-
   return (
     <main>
       <h3 style={{ textAlign: "center"}}>Welcome {user?.signInDetails?.loginId}</h3>
@@ -258,15 +287,18 @@ export default function Configuracion() {
       </button>
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para preferencias */}
-        <CategoryList categories={categories} />
+        <CategoryList
+          categories={categories} 
+        />
       </div>
-      <button onClick={signOut} style={{
+      <button 
+        style={{
         margin: "1rem",
         position: "fixed",
         bottom: 0,
         width: "80vw",
         display: "block",
-        }}>
+      }}>
         Next
       </button>        
     </main>

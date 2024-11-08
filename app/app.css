@@ -85,8 +85,16 @@ body {
     text-overflow: ellipsis;
     word-wrap: break-word;
     margin: .5rem;
+    transition: .3s;
   }
 
+  .chip.selected, .chip:hover {
+    background: rgb(0,73,119);
+    color: white;
+    transition: .3s;
+
+  }  
+
   button {    	
-    background: rgb(194,66,62);
+    background: rgb(208,48,32);
   }

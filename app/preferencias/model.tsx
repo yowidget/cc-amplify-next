@@ -14,4 +14,12 @@ export interface SelectedPreferences {
 
 export interface CategoryListProps {
   categories: Categories;
+  onPreferencesChange?: (preferences: SelectedPreferences[]) => void;
+}
+
+export interface GroupedPreferences {
+    [categoryName: string]: {
+        icon: string;
+        preferences: string[];
+    };
 }
