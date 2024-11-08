@@ -6,6 +6,41 @@ import { generateClient } from "aws-amplify/data";
 
 const client = generateClient<Schema>();
 
+
+interface InputAreaProps {
+    label: string;
+    placeholder: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onSubmit: () => void;
+    disabled: boolean;
+}
+
+
+function InputArea({
+    label,
+    placeholder,
+    value,
+    onChange,
+    onSubmit,
+    disabled,
+}: InputAreaProps) {
+    return (
+        <div>
+            <h2>{label}</h2>
+            <textarea
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+            />
+            <button onClick={onSubmit} disabled={disabled}>
+                Crear
+            </button>
+        </div>
+    );
+}
+
 export default function Recompensas() {
 
     const [recompensas, setRecompensas] = useState<
@@ -19,40 +54,6 @@ export default function Recompensas() {
     const [categorias, setCategorias] = useState<
         Array<Schema["Categoria"]["type"]>
     >([]);
-
-    interface InputAreaProps {
-        label: string;
-        placeholder: string;
-        value: string;
-        onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-        onSubmit: () => void;
-        disabled: boolean;
-    }
-
-
-    function InputArea({
-        label,
-        placeholder,
-        value,
-        onChange,
-        onSubmit,
-        disabled,
-    }: InputAreaProps) {
-        return (
-            <div>
-                <h2>{label}</h2>
-                <textarea
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={onChange}
-                    style={{ width: "100%", height: "100px", marginBottom: "10px" }}
-                />
-                <button onClick={onSubmit} disabled={disabled}>
-                    Crear
-                </button>
-            </div>
-        );
-    }
 
     function listCategorias() {
         try {
