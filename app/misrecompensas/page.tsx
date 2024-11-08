@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import "./../../app/app.css";
+import "./styles.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
+
+import { RecompensaCard } from "../../src/components/RecompensaCard";
 
 const client = generateClient<Schema>();
 
@@ -34,6 +37,17 @@ export default function MisRecompensas() {
     }  
   }>
   >([]);
+
+  const [selectedRecompensa, setSelectedRecompensa] = useState<any>(null);
+
+  const handleOpenModal = (recompensa: any) => {
+    setSelectedRecompensa(recompensa);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRecompensa(null);
+  };
+
 
   const { user, signOut } = useAuthenticator();
 
@@ -87,48 +101,23 @@ export default function MisRecompensas() {
   }, []);
 
   return (
-    <main>
-      <nav>
-        <div>
-          <a href="/">Inicio</a>
-        </div>
-        <div>
-          <a href="/configuracion">Configuración</a>
-        </div>
-        <div>
-          <a href="/misrecompensas">Recompensas</a>
-        </div>
-      </nav>
+    <>
       <h1>{user?.signInDetails?.loginId}'s Recompensas</h1>
-      <section
-        style={{
-          flex: 1,
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
+      <section className="seccion-recompensas">
         <h3>Preferencias Declaradas:</h3>
-        <ul>
+        <div className="slider">
+          <div className="slider-track">
           {preferenciasDeclaradas.map((preferencia) => (
-            <li key={preferencia.id}>
+            <div key={preferencia.id} className="slider-item">
               {preferencia.nombre} - {preferencia.categoria?.nombre || "Sin categoria"}{" "}
-            </li>
+            </div>
           ))}
-        </ul>
+          </div>
+        </div>
       </section>
-      <section
-        style={{
-          flex: 1,
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
+      <section className="seccion-recompensas">
         <h3>Recompensas personalizadas:</h3>
-        <ul>
+        <div className="recompensas-list">
           {recompensas
             .filter((recompensa) =>
               preferenciasDeclaradas.some(
@@ -137,15 +126,28 @@ export default function MisRecompensas() {
               )
             )
             .map((recompensa) => (
-              <li key={recompensa.id}>
-                {recompensa.nombre} - {recompensa.categoria.nombre}
-              </li>
+              // <div key={recompensa.id} className="recompensas-card">
+              //   {recompensa.nombre} - {recompensa.categoria.nombre}
+              // </div>
+              <RecompensaCard
+                key={recompensa.id}
+                recompensa={recompensa}
+                onOpenModal={handleOpenModal}
+              />
             ))}
-        </ul>
+        </div>
       </section>
-      <button onClick={signOut} style={{ marginTop: "20px" }}>
-        Sign out
-      </button>
-    </main>
+      {selectedRecompensa && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>{selectedRecompensa.nombre}</h3>
+            {/* <p>{selectedRecompensa.detalles}</p> */}
+            {/* <p>Fecha de caducidad: {selectedRecompensa.fechaCaducidad}</p> */}
+            <p>{selectedRecompensa.terminos}</p>
+            <button onClick={handleCloseModal}>Cerrar</button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
