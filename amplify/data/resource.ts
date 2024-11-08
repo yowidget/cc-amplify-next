@@ -16,7 +16,6 @@ const schema = a.schema({
       categoriaId: a.id(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
       location: a.customType({
-        // fields can be required or optional
         lat: a.float().required(),
         long: a.float().required(),
       }),
@@ -30,6 +29,7 @@ const schema = a.schema({
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
+      recompensaCategorias: a.hasMany("RecompensaCategoria", "categoriaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -38,6 +38,7 @@ const schema = a.schema({
       nombre: a.string(),
       categoriaId: a.id(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
+      RecompensaPreferencias: a.hasMany("RecompensaPreferencia", "preferenciaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -56,12 +57,31 @@ const schema = a.schema({
       categoriaId: a.id(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
       location: a.customType({
-        // fields can be required or optional
         lat: a.float().required(),
         long: a.float().required(),
       }),
+      RecompensaPreferencias: a.hasMany("RecompensaPreferencia", "recompensaId"),
+      RecompensaCategorias: a.hasMany("RecompensaCategoria", "recompensaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
+
+  RecompensaPreferencia: a
+    .model({
+      preferenciaId: a.id(),
+      recompensaId: a.id(),
+      preferencia: a.belongsTo("Preferencia", "preferenciaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
+
+  RecompensaCategoria: a
+    .model({
+      categoriaId: a.id(),
+      recompensaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
+
+
 
 
   categorize: a
