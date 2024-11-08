@@ -1,5 +1,10 @@
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
+import preferencias from "@/public/seeders/preferencias";
+import categorias from "@/public/seeders/categorias";
+import recompensas from "@/public/seeders/recompensas";
+import recompensasPreferencias from "@/public/seeders/recompensasPreferencias";
+
 
 const client = generateClient<Schema>();
 
@@ -7,47 +12,96 @@ export default function Setup() {
 
     async function executeSeeders() {
 
-        const data = [
-            { id: "alimentacion_y_bebidas", nombre: "Alimentación y Bebidas" },
-            { id: "delivery_de_comida", nombre: "Delivery de Comida" },
-            { id: "ropa_y_accesorios", nombre: "Ropa y Accesorios" },
-            { id: "electronica_y_tecnologia", nombre: "Electrónica y Tecnología" },
-            { id: "hogar_y_jardin", nombre: "Hogar y Jardín" },
-            { id: "salud_y_belleza", nombre: "Salud y Belleza" },
-            { id: "transporte", nombre: "Transporte" },
-            { id: "entretenimiento_y_ocio", nombre: "Entretenimiento y Ocio" },
-            { id: "vuelos", nombre: "Vuelos" },
-            { id: "hoteleria", nombre: "Hoteleria" },
-            { id: "servicios_financieros", nombre: "Servicios Financieros" },
-            { id: "seguros", nombre: "Seguros" },
-            { id: "educacion", nombre: "Educación" },
-            { id: "suscripciones", nombre: "Suscripciones" },
-            { id: "donaciones_y_caridad", nombre: "Donaciones y Caridad" },
-            { id: "impuestos_y_tarifas", nombre: "Impuestos y Tarifas" },
-            { id: "inversiones", nombre: "Inversiones" },
-            { id: "servicios_publicos", nombre: "Servicios Públicos" },
-            { id: "cuotas_membresias", nombre: "Cuotas o Membresías" },
-            { id: "transacciones_no_relevantes", nombre: "Transacciones No Relevantes" }
-        ];
-        
+        console.log("Ejecutando seeders...");
 
-        data.map((item) => {
-            client.models.Categoria.create({id: item.id, nombre: item.nombre}).then(({data, errors}) => {
+        categorias.map((item) => {
+            client.models.Categoria.create({ id: item.id, nombre: item.nombre }).then(({ data, errors }) => {
                 if (errors) console.log("Error creando categoria: ", errors);
                 console.log("Categoria creada: ", data);
             });
         })
+
+        preferencias.map((item) => {
+            client.models.Preferencia.create({ id: item.id, nombre: item.nombre, categoriaId: item.categoriaId }).then(({ data, errors }) => {
+                if (errors) console.log("Error creando preferencia: ", errors);
+                console.log("Preferencia creada: ", data);
+            });
+        })
+
+        recompensas.map((item) => {
+            client.models.Recompensa.create({ id: item.id, nombre: item.nombre }).then(({ data, errors }) => {
+                if (errors) console.log("Error creando recompensa: ", errors);
+                console.log("Recompensa creada: ", data);
+            });
+        })
+
+        // recompensasPreferencias.map((item) => {
+        //     client.models.RecompensaPreferencia.create({ id: item.id, preferenciaId: item.preferenciaId, recompensaId: item.recompensaId }).then(({ data, errors }) => {
+        //         if (errors) console.log("Error creando recompensa-preferencia: ", errors);
+        //         console.log("Recompensa-preferencia creada: ", data);
+        //     });
+        // })
+
+
+
         console.log("Seeders ejecutados");
-        
+
+    }
+
+    
+
+    async function clearDatabase() {
+        try {
+            console.log("Eliminando datos...");
+            // Paso 1: Eliminar todas las relaciones en RecompensaPreferencia
+            // const { data: recompensaPreferencias } = await client.models.RecompensaPreferencia.list();
+            // for (const recompensaPreferencia of recompensaPreferencias) {
+            //     await client.models.RecompensaPreferencia.delete({ id: recompensaPreferencia.id });
+            // }
+
+            // Paso 2: Eliminar registros dependientes
+            const { data: transacciones } = await client.models.Transaccion.list();
+            for (const transaccion of transacciones) {
+                await client.models.Transaccion.delete({ id: transaccion.id });
+            }
+
+            const { data: preferencias } = await client.models.Preferencia.list();
+            for (const preferencia of preferencias) {
+                await client.models.Preferencia.delete({ id: preferencia.id });
+            }
+
+            const { data: preferenciasDeclaradas } = await client.models.PreferenciaDeclarada.list();
+            for (const preferenciaDeclarada of preferenciasDeclaradas) {
+                await client.models.PreferenciaDeclarada.delete({ id: preferenciaDeclarada.id });
+            }
+
+            const { data: recompensas } = await client.models.Recompensa.list();
+            for (const recompensa of recompensas) {
+                await client.models.Recompensa.delete({ id: recompensa.id });
+            }
+
+            // Paso 3: Eliminar el modelo principal (Categoria)
+            const { data: categorias } = await client.models.Categoria.list();
+            for (const categoria of categorias) {
+                await client.models.Categoria.delete({ id: categoria.id });
+            }
+
+            console.log("Datos eliminados exitosamente.");
+        } catch (error) {
+            console.error("Error al eliminar datos:", error);
+        }
     }
 
     return (
         <div>
             <h1>Setup config</h1>
 
-            <h2>Ejecutar seeders</h2>
-            <button onClick={() => executeSeeders()}>Ejecutar ahora</button>
+            <button onClick={() => clearDatabase()}>Eliminar todo</button>
+            <button onClick={() => executeSeeders()}>Ejecutar seeders</button>
         </div>
     )
+
+
+
 
 }
