@@ -1,0 +1,46 @@
+.webgl {
+  background-color: var(--bg-100);
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.content {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  /* padding: 16px; */
+}
+
+.mask {
+  overflow: hidden;
+}
+
+.content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  transform: translateY(-100%);
+}
+
+.content p {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  transform: translateY(-100%);
+}
+
+.init-btn {
+  opacity: 0;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+}
+
+.init-btn a {
+  text-decoration: none;
+  color: var(--text-100);
+}
+

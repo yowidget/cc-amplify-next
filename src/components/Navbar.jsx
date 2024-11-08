@@ -13,6 +13,9 @@ export const Navbar = () => {
         <div className="navbar-item">
           <a href="/configuracion">Configuración</a>
         </div>
+        <div className="navbar-item">
+          <a href="/landing">Landing</a>
+        </div>
       </nav>
     </header>
   );
