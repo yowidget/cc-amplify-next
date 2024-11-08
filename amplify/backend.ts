@@ -31,7 +31,7 @@ const backend = defineBackend({
   myDynamoDBFunction,
   categorizeFunction,
   storage
-});
+}); 
 
 
 //Para DynamoDBStream

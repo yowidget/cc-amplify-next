@@ -45,6 +45,7 @@ const schema = a.schema({
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
+      transaccionesAnalizadas: a.hasMany("TransaccionesAnalizadas", "categoriaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -138,11 +139,11 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(categorizeFunction)),
 
-    Image: a
+  Image: a
     .model({
       name: a.string().required(),
       url: a.string().required(),
-    })
+    }).authorization((allow) => [allow.authenticated()]),
 
 });
 
