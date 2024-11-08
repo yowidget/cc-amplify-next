@@ -1,4 +1,9 @@
-import { type ClientSchema, a, defineData, defineFunction } from "@aws-amplify/backend";
+import {
+  type ClientSchema,
+  a,
+  defineData,
+  defineFunction,
+} from "@aws-amplify/backend";
 
 export const MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0";
 
@@ -22,6 +27,20 @@ const schema = a.schema({
       }),
     })
     .authorization((allow) => [allow.owner()]),
+  createTransaccionSchedule: a
+    .mutation()
+    .arguments({
+      concepto: a.string().required(),
+      categoriaId: a.id().required(),
+    })
+    .returns(a.json().required())
+    .handler([
+      a.handler.custom({
+        entry: "./createTransaccion.js",
+        dataSource: a.ref("Transaccion"),
+      }),
+    ])
+    .authorization((allow) => [allow.authenticated()]),
 
   Categoria: a
     .model({
@@ -33,36 +52,35 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.authenticated()]),
 
-    Preferencia: a
-      .model({
-        nombre: a.string(),
-        categoriaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
-      })
-      .authorization((allow) => [allow.authenticated()]),
+  Preferencia: a
+    .model({
+      nombre: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
 
-    PreferenciaDeclarada: a
-      .model({
-        nombre: a.string(),
-        preferenciaId: a.id(),
-        categoriaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
-      })
-      .authorization((allow) => [allow.owner()]),
+  PreferenciaDeclarada: a
+    .model({
+      nombre: a.string(),
+      preferenciaId: a.id(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+    })
+    .authorization((allow) => [allow.owner()]),
 
-    Recompensa: a
-      .model({
-        nombre: a.string(),
-        categoriaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
-        location: a.customType({
-          // fields can be required or optional
-          lat: a.float().required(),
-          long: a.float().required(),
-        }),
-      })
-      .authorization((allow) => [allow.authenticated()]),
-
+  Recompensa: a
+    .model({
+      nombre: a.string(),
+      categoriaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      location: a.customType({
+        // fields can be required or optional
+        lat: a.float().required(),
+        long: a.float().required(),
+      }),
+    })
+    .authorization((allow) => [allow.authenticated()]),
 
   categorize: a
     .query()
@@ -70,8 +88,6 @@ const schema = a.schema({
     .returns(a.json().required())
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(categorizeFunction)),
-
-
 });
 
 export type Schema = ClientSchema<typeof schema>;

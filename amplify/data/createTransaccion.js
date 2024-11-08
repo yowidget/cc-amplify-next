@@ -6,10 +6,12 @@ export function request(ctx) {
   const id = util.autoId();
   const now = util.time.nowISO8601();
   const owner = `${sub}::${username}`;
-  const concepto = `${ctx.args.concepto.toLowerCase()}-${id}`;
+  const concepto = ctx.args.concepto;
+  const categoriaId = ctx.args.categoriaId;
   const item = {
     __typename: "Transaccion",
     concepto,
+    categoriaId,
     owner,
     createdAt: now,
     updatedAt: now,
