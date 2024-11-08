@@ -184,57 +184,17 @@ export default function Configuracion() {
     client.models.Categoria.delete({ id: id });
   }
 
+  useEffect(() => {
+    const subscription = client.models.PreferenciaDeclarada.observeQuery().subscribe({
+      next: (data) => setPreferenciasDeclaradas([...data.items])
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <main>
-      <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-      <nav>
-        <div>
-          <a href="/">Inicio</a>
-        </div>
-        <div>
-          <a href="/configuracion">Configuración</a>
-        </div>
-        <div>
-          <a href="/misrecompensas">Recompensas</a>
-        </div>
-      </nav>
-      
-      <div style={{ display: "flex", gap: "20px" }}>
-        {/* Sección para Categorias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <InputArea
-            label="Agregar Categorías"
-            placeholder="Ingresa las categorías separadas por coma"
-            value={categoriaInput}
-            onChange={(e) => setCategoriaInput(e.target.value)}
-            onSubmit={createCategoriasFromInput}
-            disabled={!categoriaInput.trim()}
-          />
-          <h3>Categorías existentes:</h3>
-          <ul>
-            {categorias.map((categoria) => (
-              <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
-            ))}
-          </ul>
-        </section>
-
-        {/* Sección para Preferencias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <h2>Agregar Preferencias</h2>
+           <h2>Agregar Preferencias</h2>
           <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
           <select
             id="categoriaSelect"
@@ -260,21 +220,9 @@ export default function Configuracion() {
             onSubmit={createPreferenciasFromInput}
             disabled={!preferenciaInput.trim() || !selectedCategoriaId}
           />
-          <h3>Preferencias existentes:</h3>
-          <ul>
-            {preferencias.map((preferencia) => (
-              <li
-                key={preferencia.id}
-                style={{ cursor: "pointer", color: "blue" }}
-                onClick={() => handlePreferenciaClick(preferencia)}
-              >
-                {preferencia.nombre}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
+              
+        <h4>{user?.signInDetails?.loginId}</h4>     
+      <h2>Tus Preferencias son:</h2>
       {/* Sección para PreferenciasDeclaradas */}
       <section
         style={{
@@ -284,28 +232,14 @@ export default function Configuracion() {
           marginTop: "20px",
         }}
       >
-        <h2>Preferencias Declaradas</h2>
-        <ul>
-          {preferenciasDeclaradas.map((preferenciaDeclarada) => (
-            <li
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() =>
-                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-              }
-              key={preferenciaDeclarada.id}
-            >
-              {preferenciaDeclarada.nombre}
-            </li>
+          <div>
+          {preferenciasDeclaradas.map((preferencia) => (
+            <div key={preferencia.id} className="slider-item">
+              {preferencia.nombre}
+            </div>
           ))}
-        </ul>
+          </div>
       </section>
-
-      <Recompensas />
-      <Setup />
-
-      <button onClick={signOut} style={{ marginTop: "20px" }}>
-        Sign out
-      </button>
     </main>
   );
 }
