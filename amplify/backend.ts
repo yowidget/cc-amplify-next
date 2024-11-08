@@ -22,15 +22,13 @@ import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 //DynamoDbStream
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 
-//Storage
-import { storage } from "./storage/resource";
+
 
 const backend = defineBackend({
   auth,
   data,
   myDynamoDBFunction,
   categorizeFunction,
-  storage
 }); 
 
 
@@ -98,7 +96,7 @@ const eventBusRole = new Role(eventStack, "AppSyncInvokeRole", {
 // Create an EventBridge rule to route events to the AppSync API
 const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
   eventBusName: eventBus.eventBusName,
-  name: "broadcastOrderStatusChange_sandbox_2",
+  name: "broadcastOrderStatusChange",
   eventPattern: {
     source: ["amplify.orders"],
     /* The shape of the event pattern must match EventBridge's event message structure.

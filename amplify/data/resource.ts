@@ -1,12 +1,4 @@
 import { type ClientSchema, a, defineData, defineFunction } from "@aws-amplify/backend";
-import { text } from "stream/consumers";
-
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
 
 export const MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0";
 
@@ -29,14 +21,7 @@ const schema = a.schema({
         long: a.float().required(),
       }),
     })
-    .authorization((allow) => [allow.authenticated()]),
-  TransaccionesAnalizadas: a
-    .model({
-      concepto: a.string(),
-      categoriaId: a.id(),
-      categoria: a.belongsTo("Categoria", "categoriaId"),
-    })
-    .authorization((allow) => [allow.authenticated()]),
+    .authorization((allow) => [allow.owner()]),
 
   Categoria: a
     .model({
@@ -45,7 +30,6 @@ const schema = a.schema({
       preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
-      transaccionesAnalizadas: a.hasMany("TransaccionesAnalizadas", "categoriaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -125,25 +109,13 @@ const schema = a.schema({
       })
     ),
 
-  ResponseItem: a
-    .customType({
-      text: a.string().required(),
-      category: a.string().required(),
-    }),
-
   categorize: a
     .query()
     .arguments({ prompt: a.string().required().array().required() })
-    // .returns(a.ref("ResponseItem").required().array().required())
     .returns(a.json().required())
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(categorizeFunction)),
 
-  Image: a
-    .model({
-      name: a.string().required(),
-      url: a.string().required(),
-    }).authorization((allow) => [allow.authenticated()]),
 
 });
 
