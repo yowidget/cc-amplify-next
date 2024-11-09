@@ -54,10 +54,10 @@ export default function Setup() {
         try {
             console.log("Eliminando datos...");
             // Paso 1: Eliminar todas las relaciones en RecompensaPreferencia
-            const { data: recompensaPreferencias } = await client.models.RecompensaPreferencia.list();
-            for (const recompensaPreferencia of recompensaPreferencias) {
-                await client.models.RecompensaPreferencia.delete({ id: recompensaPreferencia.id });
-            }
+            // const { data: recompensaPreferencias } = await client.models.RecompensaPreferencia.list();
+            // for (const recompensaPreferencia of recompensaPreferencias) {
+            //     await client.models.RecompensaPreferencia.delete({ id: recompensaPreferencia.id });
+            // }
 
             // Paso 2: Eliminar registros dependientes
             const { data: transacciones } = await client.models.Transaccion.list();

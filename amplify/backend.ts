@@ -1,8 +1,10 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource.js";
-import { data,  MODEL_ID, categorizeFunction } from './data/resource.js';
 import { Stack } from "aws-cdk-lib";
 import {
+  Role,
+  ServicePrincipal,
+  PolicyDocument,
   Policy,
   Effect,
   PolicyStatement,
@@ -11,6 +13,8 @@ import {
 
 // Functions
 import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
+import { sendEmailRecompensa } from "./functions/sendEmailRecompensa/resource";
+import { data,  MODEL_ID, categorizeFunction } from './data/resource.js';
 
 //DynamoDbStream
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
@@ -21,15 +25,17 @@ const backend = defineBackend({
   auth,
   data,
   myDynamoDBFunction,
+  sendEmailRecompensa,
   categorizeFunction,
 }); 
+ 
 
 backend.sendEmailRecompensa.resources.lambda.addToRolePolicy(
 	new PolicyStatement({
 		actions: ['ses:SendEmail', 'ses:SendRawEmail'],
 		resources: ['*'],
 	})
-) 
+)
 
 const ebSchedulerDS = backend.data.addHttpDataSource(
 	// name of the data source that needs to be passed to my amplify/data/resource.ts file
@@ -96,6 +102,7 @@ const policy = new Policy(
           "dynamodb:GetRecords",
           "dynamodb:GetShardIterator",
           "dynamodb:ListStreams",
+          'ses:SendEmail', 'ses:SendRawEmail'
         ],
         resources: ["*"],
       }),

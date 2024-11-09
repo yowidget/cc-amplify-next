@@ -10,7 +10,6 @@ import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import Setup from "./setup";
 import Recompensas from "./recompensas";
-import Categorias from "@/src/cruds/categorias"
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -74,6 +73,9 @@ export default function Configuracion() {
   >([]);
 
 
+
+
+
   function listPreferencias(categoriaSelect: HTMLSelectElement) {
     setSelectedCategoriaId(categoriaSelect.value);
     client.models.Preferencia.list({
@@ -81,16 +83,11 @@ export default function Configuracion() {
         categoriaId: { eq: categoriaSelect.value },
       },
     }).then((data) => {
-      console.log([...data.data]);
       setPreferencias([...data.data]);
     });
   }
 
-  function listPreferenciasDeclaradas() {
-    client.models.PreferenciaDeclarada.list().then((data) => {
-      setPreferenciasDeclaradas([...data.data]);
-    });
-  }
+
 
   // function listRecompensas() {
   //   const subscription = client.models.Recompensa.observeQuery().subscribe({
@@ -151,10 +148,7 @@ export default function Configuracion() {
   function listCategorias() {
     try {
       const subscription = client.models.Categoria.observeQuery().subscribe({
-        next: (data) => {
-          
-          console.log("Categorias",[...data.items] );
-          setCategorias([...data.items])},
+        next: (data) => setCategorias([...data.items]),
       });
       return subscription;
     } catch (e) {
@@ -164,37 +158,25 @@ export default function Configuracion() {
 
   useEffect(() => {
     listCategorias();
-    listPreferenciasDeclaradas();
   }, []);
+
+
 
   function handlePreferenciaClick(preferencia: Schema["Preferencia"]["type"]) {
     client.models.PreferenciaDeclarada.create({
       nombre: preferencia.nombre,
       preferenciaId: preferencia.id,
       categoriaId: preferencia.categoriaId,
-    }).then(() => {
-      console.log("Preferencia declarada asignada");
-    }).catch((e) => {
-      console.error("Error al declarar la preferencia", e);
-    }).finally(() => {
-      setSelectedPreferencia(preferencia);
-      listPreferenciasDeclaradas();
     });
+    setSelectedPreferencia(preferencia);
   }
 
   function handlePreferenciaDeclaradaClick(id: string) {
-    client.models.PreferenciaDeclarada.delete({ id }).then(() => {
-      console.log("Preferencia declarada eliminada");
-
-      listPreferenciasDeclaradas();
-    }).catch((e) => {
-      console.error("Error al eliminar la preferencia declarada", e);
-    }
-    );
+    client.models.PreferenciaDeclarada.delete({ id });
   }
 
 
-
+ 
 
 
 
@@ -202,50 +184,17 @@ export default function Configuracion() {
     client.models.Categoria.delete({ id: id });
   }
 
+  useEffect(() => {
+    const subscription = client.models.PreferenciaDeclarada.observeQuery().subscribe({
+      next: (data) => setPreferenciasDeclaradas([...data.items])
+    });
 
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <main>
-    <button onClick={() => console.log(Categorias.post({id: "test", nombre: "test"}))}></button>
-      <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-      <div style={{ display: "flex", gap: "20px" }}>
-        {/* Sección para Categorias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <InputArea
-            label="Agregar Categorías"
-            placeholder="Ingresa las categorías separadas por coma"
-            value={categoriaInput}
-            onChange={(e) => setCategoriaInput(e.target.value)}
-            onSubmit={createCategoriasFromInput}
-            disabled={!categoriaInput.trim()}
-          />
-          <h3>Categorías existentes:</h3>
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            <ul>
-              {categorias.map((categoria) => (
-                <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* Sección para Preferencias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <h2>Agregar Preferencias</h2>
+           <h2>Agregar Preferencias</h2>
           <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
           <select
             id="categoriaSelect"
@@ -271,21 +220,9 @@ export default function Configuracion() {
             onSubmit={createPreferenciasFromInput}
             disabled={!preferenciaInput.trim() || !selectedCategoriaId}
           />
-          <h3>Preferencias existentes:</h3>
-          <ul>
-            {preferencias.map((preferencia) => (
-              <li
-                key={preferencia.id}
-                style={{ cursor: "pointer", color: "blue" }}
-                onClick={() => handlePreferenciaClick(preferencia)}
-              >
-                {preferencia.nombre}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
+              
+        <h4>{user?.signInDetails?.loginId}</h4>     
+      <h2>Tus Preferencias son:</h2>
       {/* Sección para PreferenciasDeclaradas */}
       <section
         style={{
@@ -295,28 +232,14 @@ export default function Configuracion() {
           marginTop: "20px",
         }}
       >
-        <h2>Preferencias Declaradas</h2>
-        <ul>
-          {preferenciasDeclaradas.map((preferenciaDeclarada) => (
-            <li
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() =>
-                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-              }
-              key={preferenciaDeclarada.id}
-            >
-              {preferenciaDeclarada.nombre}
-            </li>
+          <div>
+          {preferenciasDeclaradas.map((preferencia) => (
+            <div key={preferencia.id} className="slider-item">
+              {preferencia.nombre}
+            </div>
           ))}
-        </ul>
+          </div>
       </section>
-
-      <Recompensas />
-      <Setup />
-
-      <button onClick={signOut} style={{ marginTop: "20px" }}>
-        Sign out
-      </button>
     </main>
   );
 }
