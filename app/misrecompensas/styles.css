@@ -4,7 +4,6 @@
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--bg-100);
 }
 
 .slider-track {
@@ -14,7 +13,6 @@
   padding: 16px 4px;
   transition: transform 0.5s;
   overflow-y: hidden;
-  background-color: var(--bg-100);
   scrollbar-width: 4px;
   scrollbar-color: var(--bg-200) var(--bg-100);
 }
@@ -44,6 +42,7 @@ h1 {
   background-color: var(--bg-200);
   flex: 0 0 auto;
   transition: all 0.5s;
+  color: white;
 }
 
 .slider-item:hover {
