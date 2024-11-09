@@ -206,18 +206,6 @@ export default function Configuracion() {
   return (
     <main>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-      <nav>
-        <div>
-          <a href="/">Inicio</a>
-        </div>
-        <div>
-          <a href="/configuracion">Configuración</a>
-        </div>
-        <div>
-          <a href="/misrecompensas">Recompensas</a>
-        </div>
-      </nav>
-
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}
         <section

@@ -150,17 +150,6 @@ export default function App() {
 
   return (
     <main>
-      <nav>
-        <div>
-          <a href="/">Inicio</a>
-        </div>
-        <div>
-          <a href="/misrecompensas">Recompensas</a>
-        </div>
-        <div>
-          <a href="/configuracion">Configuración</a>
-        </div>
-      </nav>
       <h1>Transacciones</h1>
 
       <section
