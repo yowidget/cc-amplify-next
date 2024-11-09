@@ -10,7 +10,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import Setup from "./setup";
 import Recompensas from "./recompensas";
-import Categorias from "@/src/cruds/categorias"
+import PreferenciasDeclaradas from "@/src/cruds/preferenciasDeclaradas"
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -152,9 +152,10 @@ export default function Configuracion() {
     try {
       const subscription = client.models.Categoria.observeQuery().subscribe({
         next: (data) => {
-          
-          console.log("Categorias",[...data.items] );
-          setCategorias([...data.items])},
+
+          console.log("Categorias", [...data.items]);
+          setCategorias([...data.items])
+        },
       });
       return subscription;
     } catch (e) {
@@ -167,16 +168,14 @@ export default function Configuracion() {
     listPreferenciasDeclaradas();
   }, []);
 
-  function handlePreferenciaClick(preferencia: Schema["Preferencia"]["type"]) {
-    client.models.PreferenciaDeclarada.create({
-      nombre: preferencia.nombre,
-      preferenciaId: preferencia.id,
-      categoriaId: preferencia.categoriaId,
-    }).then(() => {
-      console.log("Preferencia declarada asignada");
-    }).catch((e) => {
-      console.error("Error al declarar la preferencia", e);
-    }).finally(() => {
+  function handlePreferenciaClick(preferencia: Schema["PreferenciaDeclarada"]["type"]) {
+    PreferenciasDeclaradas.post({ nombre: preferencia.nombre, preferenciaId: preferencia.id }).then(() => {
+      console.log("Preferencia declarada creada");
+    }
+    ).catch((e) => {
+      console.error("Error al crear la preferencia declarada", e);
+    }
+    ).finally(() => {
       setSelectedPreferencia(preferencia);
       listPreferenciasDeclaradas();
     });
@@ -206,7 +205,7 @@ export default function Configuracion() {
 
   return (
     <main>
-    <button onClick={() => console.log(Categorias.post({id: "test", nombre: "test"}))}></button>
+      <button onClick={() => console.log(PreferenciasDeclaradas.getAll())}></button>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
       <div style={{ display: "flex", gap: "20px" }}>
         {/* Sección para Categorias */}

@@ -52,7 +52,6 @@ const schema = a.schema({
     .model({
       nombre: a.string().required(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
-      preferenciasDeclaradas: a.hasMany("PreferenciaDeclarada", "categoriaId"),
       recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
       recompensaCategorias: a.hasMany("RecompensaCategoria", "categoriaId"),
@@ -61,19 +60,19 @@ const schema = a.schema({
 
   Preferencia: a
     .model({
-      nombre: a.string(),
-      categoriaId: a.id(),
+      nombre: a.string().required(),
+      categoriaId: a.id().required(),
       categoria: a.belongsTo("Categoria", "categoriaId"),
       RecompensaPreferencias: a.hasMany("RecompensaPreferencia", "preferenciaId"),
+      PreferenciaDeclaradas: a.hasMany("PreferenciaDeclarada", "preferenciaId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
   PreferenciaDeclarada: a
     .model({
-      nombre: a.string(),
-      preferenciaId: a.id(),
-      categoriaId: a.id(),
-      categoria: a.belongsTo("Categoria", "categoriaId"),
+      nombre: a.string().required(),
+      preferenciaId: a.id().required(),
+      preferencia: a.belongsTo("Preferencia", "preferenciaId"),
     })
     .authorization((allow) => [allow.owner()]),
 
