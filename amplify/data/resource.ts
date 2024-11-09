@@ -63,6 +63,22 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.authenticated()]),
 
+  RecompensaPreferencia: a
+    .model({
+      preferenciaId: a.id(),
+      recompensaId: a.id(),
+      preferencia: a.belongsTo("Preferencia", "preferenciaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
+
+  RecompensaCategoria: a
+    .model({
+      categoriaId: a.id(),
+      recompensaId: a.id(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
+
 
   categorize: a
     .query()
@@ -73,6 +89,8 @@ const schema = a.schema({
 
 
 });
+
+
 
 export type Schema = ClientSchema<typeof schema>;
 

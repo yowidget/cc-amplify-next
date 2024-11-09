@@ -10,6 +10,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import Setup from "./setup";
 import Recompensas from "./recompensas";
+import Categorias from "@/src/cruds/categorias"
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -186,6 +187,7 @@ export default function Configuracion() {
 
   return (
     <main>
+    <button onClick={() => console.log(Categorias.post({id: "test", nombre: "test"}))}></button>
       <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
       <nav>
         <div>
