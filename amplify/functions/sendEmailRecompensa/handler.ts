@@ -1,11 +1,51 @@
-import { type Schema } from '../../data/resource'
-import { generateClient } from 'aws-amplify/data'
-import { getTransaccion } from './graphql/queries'
-import { configureAmplify } from './configureAmplify'
-
-import { SESv2Client, SendEmailCommand, CreateEmailIdentityCommand } from "@aws-sdk/client-sesv2";
+import { type Schema } from "../../data/resource";
+import { generateClient } from "aws-amplify/data";
+import { getTransaccion, listRecompensas } from "./graphql/queries";
+import { configureAmplify } from "./configureAmplify";
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+  InvokeModelCommandInput,
+} from "@aws-sdk/client-bedrock-runtime";
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 const client = new SESv2Client({ region: process.env.REGION });
 
+const clientBedrock = new BedrockRuntimeClient();
+
+async function getRecomendacion(recompensas:string, transaccion: string) {
+  const prompt = `Recomienda una recompensa relacionada a la transacción "${transaccion}"`;
+  let systemText = "Eres un agente de servicio al cliente especializado en recompensas para tarjetas de crédito de viajeros frecuentes. Un cliente ha realizado una transacción y se le recomendará una lista de recompensas." ;
+  systemText += `Las recompensas disponibles son: ${recompensas}`;
+  systemText += "El cliente ha realizado una transacción por el concepto que se te entrega. Genera el mensaje para un correo electrónico para avisar de 3 recompensas recomendadas.";
+  const input: InvokeModelCommandInput = {
+    modelId: "anthropic.claude-3-haiku-20240307-v1:0",
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify({
+      anthropic_version: "bedrock-2023-05-31",
+      system: systemText,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(prompt),
+            },
+          ],
+        },
+      ],
+      max_tokens: 3000,
+      temperature: 0.5,
+    }),
+  };
+
+  const command = new InvokeModelCommand(input);
+  const response = await clientBedrock.send(command);
+  const data = JSON.parse(Buffer.from(response.body).toString());
+
+  return data.content[0].text;
+}
 async function sendEmail(subject: string, body: string, email: string) {
   const input = {
     // SendEmailRequest
@@ -51,7 +91,6 @@ async function sendEmail(subject: string, body: string, email: string) {
   return response;
 }
 
-
 export const handler = async (event: {
   transaccionId: string;
   userEmail: string;
@@ -59,19 +98,39 @@ export const handler = async (event: {
   console.log("event", event);
   console.log("transaccionId", event.transaccionId);
   console.log("userEmail", event.userEmail);
-  await configureAmplify()
+  await configureAmplify();
   const client = generateClient<Schema>({
-		authMode: 'iam',
-	})
+    authMode: "iam",
+  });
 
-	const { data } = await client.graphql({
-		query: getTransaccion,
-		variables: { id: event.transaccionId },
-	})
-	console.log('the data from the request', data)
-  
+  const { data } = await client.graphql({
+    query: getTransaccion,
+    variables: { id: event.transaccionId },
+  });
+  const recompensas = await client.graphql({
+    query: listRecompensas,
+
+    // variables: {
+    //   filter: { categoriaId: { eq: data?.getTransaccion?.categoriaId } },
+    // },
+  });
+  const nombreRecompensas = recompensas.data?.listRecompensas?.items.map(
+    (recompensa) => recompensa?.nombre
+  );
+  console.log("nombreRecompensas", nombreRecompensas);
+  const recomendacion = await getRecomendacion(
+    nombreRecompensas.join(", "),
+    data?.getTransaccion?.concepto || ""
+  );
+  // console.log("recompensas", recompensas.data?.listRecompensas?.items);
+  //console.log("the data from the request", data);
+
   try {
-    await sendEmail("Recompensa", `Has recibido una recibido una recompensa por la transacción ${event.transaccionId}`, event.userEmail);
+    await sendEmail(
+      "Recompensa",
+      `Has recibido una recibido una recompensa por la transacción ${data?.getTransaccion?.concepto}. La recompensa recomendada es: ${recomendacion}`,
+      event.userEmail
+    );
   } catch (error) {
     console.error("Error al enviar el correo", error);
   }
