@@ -3,3 +3,6 @@ npx ampx sandbox --stream-function-logs
 
 # Para ejecutar el frontend
 npm run dev
+
+# Para agregar funcionalidad graphql a una function
+npx ampx generate graphql-client-code --out amplify/functions/sendEmailRecompensa/graphql --profile Molaca

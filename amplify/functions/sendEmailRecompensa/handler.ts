@@ -1,3 +1,8 @@
+import { type Schema } from '../../data/resource'
+import { generateClient } from 'aws-amplify/data'
+import { getTransaccion } from './graphql/queries'
+import { configureAmplify } from './configureAmplify'
+
 import { SESv2Client, SendEmailCommand, CreateEmailIdentityCommand } from "@aws-sdk/client-sesv2";
 const client = new SESv2Client({ region: process.env.REGION });
 
@@ -54,6 +59,17 @@ export const handler = async (event: {
   console.log("event", event);
   console.log("transaccionId", event.transaccionId);
   console.log("userEmail", event.userEmail);
+  await configureAmplify()
+  const client = generateClient<Schema>({
+		authMode: 'iam',
+	})
+
+	const { data } = await client.graphql({
+		query: getTransaccion,
+		variables: { id: event.transaccionId },
+	})
+	console.log('the data from the request', data)
+  
   try {
     await sendEmail("Recompensa", `Has recibido una recibido una recompensa por la transacción ${event.transaccionId}`, event.userEmail);
   } catch (error) {

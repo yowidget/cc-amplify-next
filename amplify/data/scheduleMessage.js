@@ -38,6 +38,7 @@ export function request(ctx) {
 	}
 }
 export function response(ctx) {
+	console.log('body', ctx.result.body)
 	const parsedBody = JSON.parse(ctx.result.body)
 	console.log('parsedBody', parsedBody)
 	return { message: 'message successfully scheduled' }
