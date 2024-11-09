@@ -127,8 +127,8 @@ export const handler = async (event: {
 
   try {
     await sendEmail(
-      "Recompensa",
-      `Has recibido una recibido una recompensa por la transacción ${data?.getTransaccion?.concepto}. La recompensa recomendada es: ${recomendacion}`,
+      "Recomendación de recompensas",
+      `${recomendacion}`,
       event.userEmail
     );
   } catch (error) {

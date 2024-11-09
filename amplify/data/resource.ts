@@ -13,6 +13,7 @@ export const categorizeFunction = defineFunction({
   environment: {
     MODEL_ID,
   },
+  timeoutSeconds: 60 // 1 minute timeout
 });
 
 const schema = a
