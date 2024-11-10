@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+
 const Navbar: React.FC = () => {
   const { signOut } = useAuthenticator();
   const [isOpen, setIsOpen] = useState(false);
@@ -10,35 +11,14 @@ const Navbar: React.FC = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-  return (
-    <nav className="bg-white text-capitalone-blue p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Logo y nombre */}
-        <div className="flex items-center space-x-2">
-          <Link href="/" passHref>
-            <Image
-              src="/COT_logo.svg" // Ruta del logo
-              alt="Logo de MyApp"
-              width={120} // Ancho del logo (ajustable)
-              height={40} // Alto del logo (ajustable)
-              className="cursor-pointer  md:w-48"
-              priority // Carga optimizada para el logo
-            />
-          </Link>
-        </div>
 
-        {/* Enlaces de navegación */}
-        <div
-          className={`flex-col md:flex md:flex-row md:space-x-4 md:items-center ${
-            isOpen ? "flex" : "hidden"
-          }`}
-        >
-          <Link href="/preferencias" className="hover:text-capitalone-red">
-            Preferencias
-          </Link>
-         
-          <button onClick={signOut}>Sign out</button>
-        </div>
+  const handleLinkClick = () => {
+    setIsOpen(false); // Cierra el menú al hacer clic en un enlace o el logo
+  };
+
+  return (
+    <nav className="bg-white text-capitalone-blue p-4 border-b-2 border-capitalone-blue relative">
+      <div className="container mx-auto flex justify-between items-center">
         {/* Botón de menú hamburguesa (visible en móviles) */}
         <button
           onClick={toggleMenu}
@@ -59,7 +39,50 @@ const Navbar: React.FC = () => {
             />
           </svg>
         </button>
+
+        {/* Logo y nombre */}
+        <div className="flex items-center md:items-start w-full md:w-auto justify-center md:justify-start">
+          <Link href="/" passHref>
+            <button onClick={handleLinkClick}>
+              <Image
+                src="/COT_logo.svg" // Ruta del logo
+                alt="Logo de MyApp"
+                width={120} // Ancho del logo (ajustable)
+                height={40} // Alto del logo (ajustable)
+                className="cursor-pointer"
+                priority // Carga optimizada para el logo
+              />
+            </button>
+          </Link>
+        </div>
+
+        {/* Enlaces de navegación para pantallas grandes */}
+        <div className="hidden md:flex md:flex-row md:space-x-4 md:items-center">
+          <Link href="/preferencias" className="hover:text-capitalone-red">
+            Preferencias
+          </Link>
+          <button onClick={signOut} className="hover:text-capitalone-red">
+            Sign out
+          </button>
+        </div>
       </div>
+
+      {/* Menú desplegable para móviles */}
+      {isOpen && (
+        <div className="absolute top-full left-0 w-full bg-white border-t border-capitalone-blue md:hidden">
+          <div className="flex flex-col p-4 space-y-2">
+            <Link href="/" className="hover:text-capitalone-red" onClick={handleLinkClick}>
+              Inicio
+            </Link>
+            <Link href="/preferencias" className="hover:text-capitalone-red" onClick={handleLinkClick}>
+              Preferencias
+            </Link>
+            <button onClick={() => { handleLinkClick(); signOut(); }} className="text-left hover:text-capitalone-red">
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

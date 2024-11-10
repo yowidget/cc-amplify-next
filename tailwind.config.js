@@ -12,8 +12,9 @@ module.exports = {
     extend: {
       colors: {
         'capitalone': {
-          'blue': '#101D2A',        // Primary Capital One blue
+          'blue': '#355E7E',        // Primary Capital One blue
           'blue-light': '#0071C5',   // Secondary blue for accents
+          'indigo': '#3274AC',   // Secondary blue for accents
           'red': '#BB3530',          // Primary Capital One red
           'red-dark': '#A30015',     // Darker red for hover or active states
           'gray': '#4B4B4B',         // Neutral gray for text

@@ -134,8 +134,8 @@ export default function Preferencias() {
                   }}
                   className={`cursor-pointer px-3 py-1 rounded-full text-sm ${
                     activa
-                      ? "bg-green-200 text-green-800 hover:bg-green-300"
-                      : "bg-blue-200 text-blue-800 hover:bg-blue-300"
+                      ? "bg-capitalone-indigo text-white hover:bg-capitalone-blue transition-all"
+                      : "bg-gray-300 text-capitalone-blue hover:bg-capitalone-indigo hover:text-white transition-all"
                   }`}
                 >
                   {preferencia.nombre}
