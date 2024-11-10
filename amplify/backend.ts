@@ -18,9 +18,13 @@ import { data, MODEL_ID, categorizeFunction } from "./data/resource.js";
 //DynamoDbStream
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 
+//Storage
+import { storage } from "./storage/resource";
+
 const backend = defineBackend({
   auth,
   data,
+  storage,
   myDynamoDBFunction,
   sendEmailRecompensa,
   categorizeFunction,
