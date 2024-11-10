@@ -8,8 +8,12 @@ import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import InputLabel from '@mui/material/InputLabel';
 import Setup from "./setup";
 import Recompensas from "./recompensas";
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -42,7 +46,7 @@ function InputArea({
         onChange={onChange}
         style={{ width: "100%", height: "100px", marginBottom: "10px" }}
       />
-      <button onClick={onSubmit} disabled={disabled}>
+      <button color="primary" onClick={onSubmit} disabled={disabled}>
         Crear
       </button>
     </div>
@@ -76,11 +80,11 @@ export default function Configuracion() {
 
 
 
-  function listPreferencias(categoriaSelect: HTMLSelectElement) {
-    setSelectedCategoriaId(categoriaSelect.value);
+  function listPreferencias(categoriaSelect: SelectChangeEvent) {
+    setSelectedCategoriaId(categoriaSelect.target.value);
     client.models.Preferencia.list({
       filter: {
-        categoriaId: { eq: categoriaSelect.value },
+        categoriaId: { eq: categoriaSelect.target.value },
       },
     }).then((data) => {
       setPreferencias([...data.data]);
@@ -194,44 +198,47 @@ export default function Configuracion() {
 
   return (
     <main>
-           <h2>Agregar Preferencias</h2>
-          <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
-          <select
+          <h2>Bienvenido {user?.signInDetails?.loginId}</h2>
+          <h2>Agregar Preferencias</h2>
+          <div style={{margin: "1rem 0"}}>
+          <InputLabel>Selecciona una categoría:</InputLabel>
+          <Select
+            className="select"
+            labelId="categoriaSelect"
             id="categoriaSelect"
-            value={selectedCategoriaId ?? ""}
-            onChange={(e) => listPreferencias(e.target)}
-            style={{ width: "100%", marginBottom: "10px" }}
+            value={selectedCategoriaId ?? "Selecciona una categoria"}
+            label="Selecciona una categoria"
+            onChange={listPreferencias}
           >
-            <option value="" disabled>
-              -- Selecciona una categoría --
-            </option>
             {categorias.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
+              <MenuItem  key={categoria.id} value={categoria.id}>
                 {categoria.nombre}
-              </option>
-            ))}
-          </select>
+              </MenuItem>
+            ))
+            }
+          </Select>
+          </div>
 
-          <InputArea
-            label="Agregar Preferencias"
-            placeholder="Ingresa las preferencias separadas por coma"
-            value={preferenciaInput}
-            onChange={(e) => setPreferenciaInput(e.target.value)}
-            onSubmit={createPreferenciasFromInput}
-            disabled={!preferenciaInput.trim() || !selectedCategoriaId}
-          />
-              
-        <h4>{user?.signInDetails?.loginId}</h4>     
-      <h2>Tus Preferencias son:</h2>
-      {/* Sección para PreferenciasDeclaradas */}
-      <section
-        style={{
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
+          <div style={{margin: "1rem 0"}}>
+            <InputArea
+              label=""
+              placeholder="Ingresa las preferencias separadas por coma"
+              value={preferenciaInput}
+              onChange={(e) => setPreferenciaInput(e.target.value)}
+              onSubmit={createPreferenciasFromInput}
+              disabled={!preferenciaInput.trim() || !selectedCategoriaId}
+            />              
+          </div>
+          <h2>Tus Preferencias son:</h2>
+          {/* Sección para PreferenciasDeclaradas */}
+          <section
+            style={{
+              border: "1px solid #ccc",
+              padding: "20px",
+              borderRadius: "8px",
+              marginTop: "20px",
+            }}
+          >
           <div>
           {preferenciasDeclaradas.map((preferencia) => (
             <div key={preferencia.id} className="slider-item">
