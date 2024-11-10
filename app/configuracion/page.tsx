@@ -284,26 +284,19 @@ export default function Configuracion() {
       </div>
 
       {/* Sección para PreferenciasDeclaradas */}
-      <section
-        style={{
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
-        <h2>Preferencias Declaradas</h2>
+      <section className="border border-gray-300 p-5 rounded mt-5">
+        <h2 className="text-xl font-semibold mb-3">Preferencias Declaradas</h2>
         <ul>
           {preferenciasDeclaradas.map((preferenciaDeclarada) => (
-            <li
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() =>
-                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-              }
-              key={preferenciaDeclarada.id}
-            >
-              {preferenciaDeclarada.nombre}
-            </li>
+        <li
+          className="cursor-pointer text-red-500 hover:underline"
+          onClick={() =>
+            handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
+          }
+          key={preferenciaDeclarada.id}
+        >
+          {preferenciaDeclarada.nombre}
+        </li>
           ))}
         </ul>
       </section>

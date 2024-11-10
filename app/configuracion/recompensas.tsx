@@ -74,68 +74,93 @@ export default function Recompensas() {
     }
 
 
-    function CreateRecompensa() {
-
-        const [recompensaName, setRecompensaName] = useState<string>("");
-        const [recompensaDetails, setRecompensaDetails] = useState<string>("");
-
-        // Función para crear recompensa desde el input
-        function createRecompensaFromInput() {
-            if (!file) return alert("Debes seleccionar una imagen");
-
-            client.models.Recompensa.create({ nombre: recompensaName, detalles: recompensaDetails })
-                .then(async ({ data: recompensa }) => {
-                    if (recompensa) {
-                        console.log(`Recompensa ${recompensa.nombre} creada`);
-
-                        const result = await uploadData({
-                            path: `images/${recompensa.id}-${file.name}`,
-                            data: file,
-                            options: { contentType: "image/png" },
-                        }).result;
-
-                        await client.models.Recompensa.update({
-                            id: recompensa.id,
-                            img: result?.path,
-                        });
-                    }
-                })
-                .catch((e) => {
-                    console.error(`Error al crear la recompensa ${recompensaName}`, e);
-                }).finally(() => {
-                    loadRecompensas();
-                    setRecompensaName("");
-                    setRecompensaDetails("");
-                });
-
-        }
-
+    const CreateRecompensa: React.FC = () => {
+        const [recompensaName, setRecompensaName] = useState("");
+        const [recompensaDetails, setRecompensaDetails] = useState("");
+        const [file, setFile] = useState<File | null>(null); // Estado para el archivo
+        const [imagePreview, setImagePreview] = useState<string>("");
+    
         const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             const selectedFile = event.target.files ? event.target.files[0] : null;
-            if (selectedFile) setFile(selectedFile);
+            if (selectedFile) {
+                setFile(selectedFile);
+                setImagePreview(URL.createObjectURL(selectedFile));
+            }
         };
-
+    
+        async function createRecompensaFromInput() {
+            if (!file) return alert("Debes seleccionar una imagen");
+    
+            try {
+                const { data: recompensa } = await client.models.Recompensa.create({
+                    nombre: recompensaName,
+                    detalles: recompensaDetails,
+                });
+    
+                if (recompensa) {
+                    console.log(`Recompensa ${recompensa.nombre} creada`);
+    
+                    const result = await uploadData({
+                        path: `images/${recompensa.id}-${file.name}`,
+                        data: file,
+                        options: { contentType: file.type },
+                    }).result;
+    
+                    await client.models.Recompensa.update({
+                        id: recompensa.id,
+                        img: result?.path,
+                    });
+                }
+            } catch (error) {
+                console.error(`Error al crear la recompensa ${recompensaName}`, error);
+            } finally {
+                loadRecompensas();
+                setRecompensaName("");
+                setRecompensaDetails("");
+                setFile(null); // Resetea el archivo
+                setImagePreview(""); // Borra la vista previa
+            }
+        }
+    
         return (
-            <div>
-                <h2>Agregar recompensas</h2>
+            <div className="p-6 bg-white shadow-md rounded-lg">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Agregar Recompensas</h2>
                 <input
                     type="text"
                     value={recompensaName}
                     onChange={(e) => setRecompensaName(e.target.value)}
+                    placeholder="Nombre de la recompensa"
+                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                 />
                 <textarea
-                    placeholder={"Ingresa los detalles de la recompensa"}
+                    placeholder="Ingresa los detalles de la recompensa"
                     value={recompensaDetails}
                     onChange={(e) => setRecompensaDetails(e.target.value)}
-                    style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+                    className="w-full p-2 h-24 mb-4 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                 />
-                <input type="file" accept="image/*" onChange={handleFileChange} />
-                <button onClick={() => createRecompensaFromInput()} disabled={!recompensaDetails.trim()}>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="mb-4 text-sm"
+                />
+                {imagePreview && (
+                    <img
+                        src={imagePreview}
+                        alt="Vista previa de la imagen"
+                        className="w-full h-32 object-cover rounded-lg mb-4"
+                    />
+                )}
+                <button
+                    onClick={createRecompensaFromInput}
+                    disabled={!recompensaDetails.trim()}
+                    className="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors duration-200 disabled:bg-gray-300"
+                >
                     Crear
                 </button>
             </div>
         );
-    }
+    };
 
     useEffect(() => {
         loadRecompensas();
@@ -161,14 +186,22 @@ export default function Recompensas() {
 
 
         return (
-            <div className="flex items-center p-4 bg-white rounded-lg shadow-md mb-4">
-                <div className="w-full">
-                    <h2 className="text-xl font-bold text-gray-800">{recompensa.nombre}</h2>
-                    <p className="text-gray-600 mb-2">{recompensa.detalles}</p>
-                    <img className="w-24 h-24 object-cover rounded-md mb-2" src={url} alt="Imagen almacenada" />
+            <div className="w-full max-w-sm bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                {/* Imagen */}
+                <img className="w-full h-48 object-cover" src={url} alt="Imagen almacenada" />
+
+                {/* Contenido de la tarjeta */}
+                <div className="p-4">
+                    {/* Título */}
+                    <h2 className="text-2xl font-semibold text-gray-800">{recompensa.nombre}</h2>
+
+                    {/* Descripción */}
+                    <p className="text-gray-600 mt-2 mb-4">{recompensa.detalles}</p>
+
+                    {/* Botón Eliminar */}
                     <button
                         onClick={() => handleEliminarRecompensa(recompensa.id)}
-                        className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600 transition-colors duration-200"
+                        className="w-full py-2 text-white bg-red-500 rounded hover:bg-red-600 transition-colors duration-200"
                     >
                         Eliminar
                     </button>
@@ -178,26 +211,22 @@ export default function Recompensas() {
     };
 
     return (
-        <section
-            style={{
-                flex: 1,
-                border: "1px solid #ccc",
-                padding: "20px",
-                borderRadius: "8px",
-                marginTop: "20px",
-            }}
-        >
-            <div style={{ display: "flex" }}>
-                <div style={{ width: "50%" }}>
+        <section className="flex-1 border border-gray-300 p-6 rounded-lg mt-8 bg-gray-50">
+            <div className="mb-8">
+                <div className="w-full lg:w-1/2">
                     <CreateRecompensa />
                 </div>
             </div>
-            <h3>Recompensas existentes:</h3>
-            <ul style={{ backgroundColor: 'white' }}>
-                {recompensas.map((recompensa) => (
-                    <RecompensaItem key={recompensa.id} recompensa={recompensa} />
-                ))}
-            </ul>
+            <div className="space-y-6">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6">Recompensas existentes:</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {recompensas.map((recompensa) => (
+                        <li key={recompensa.id}>
+                            <RecompensaItem recompensa={recompensa} />
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </section>
     );
 }
