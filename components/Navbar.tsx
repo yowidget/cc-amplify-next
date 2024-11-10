@@ -33,12 +33,10 @@ const Navbar: React.FC = () => {
             isOpen ? "flex" : "hidden"
           }`}
         >
-          <Link href="/recompensas" className="hover:text-capitalone-red">
-            Recompensas
+          <Link href="/preferencias" className="hover:text-capitalone-red">
+            Preferencias
           </Link>
-          <Link href="/transacciones" className="hover:text-capitalone-red">
-            Transacciones
-          </Link>
+         
           <button onClick={signOut}>Sign out</button>
         </div>
         {/* Botón de menú hamburguesa (visible en móviles) */}
