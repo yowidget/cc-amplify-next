@@ -35,9 +35,8 @@ function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }: 
       <button
         onClick={onSubmit}
         disabled={disabled}
-        className={`w-full py-2 px-4 rounded-lg text-white transition duration-200 ${
-          disabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-        }`}
+        className={`w-full py-2 px-4 rounded-lg text-white transition duration-200 ${disabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+          }`}
       >
         Crear
       </button>
@@ -48,35 +47,33 @@ function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }: 
 
 export default function Configuracion() {
   const { user, signOut } = useAuthenticator();
-  const [categorias, setCategorias] = useState<
-    Array<Schema["Categoria"]["type"]>
-  >([]);
+  const [categorias, setCategorias] = useState<Array<Schema["Categoria"]["type"]>>([]);
   const [categoriaInput, setCategoriaInput] = useState<string>("");
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string | null>(
-    null
-  );
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string | null>(null);
 
-  const [preferencias, setPreferencias] = useState<
-    Array<Schema["Preferencia"]["type"]>
-  >([]);
+  const [preferencias, setPreferencias] = useState<Array<Schema["Preferencia"]["type"]>>([]);
   const [preferenciaInput, setPreferenciaInput] = useState<string>("");
-  const [selectedPreferencia, setSelectedPreferencia] = useState<
-    Schema["Preferencia"]["type"] | null
-  >(null);
+  const [selectedPreferencia, setSelectedPreferencia] = useState<Schema["Preferencia"]["type"] | null>(null);
 
-  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<
-    Array<Schema["PreferenciaDeclarada"]["type"]>
-  >([]);
+  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<Array<Schema["PreferenciaDeclarada"]["type"]>>([]);
 
 
-  function listPreferencias(categoriaSelect: HTMLSelectElement) {
+  useEffect(() => {
+    listCategorias();
+    listPreferenciasDeclaradas();
+  }, []);
+
+  function changeCategoriasSelect(categoriaSelect: HTMLSelectElement) {
     setSelectedCategoriaId(categoriaSelect.value);
+    listPreferencias(categoriaSelect.value);
+  }
+
+  function listPreferencias(categoriaId?: string) {
     client.models.Preferencia.list({
       filter: {
-        categoriaId: { eq: categoriaSelect.value },
+        categoriaId: { eq: categoriaId || selectedCategoriaId || "" },
       },
     }).then((data) => {
-      console.log([...data.data]);
       setPreferencias([...data.data]);
     });
   }
@@ -87,16 +84,6 @@ export default function Configuracion() {
     });
   }
 
-  // function listRecompensas() {
-  //   const subscription = client.models.Recompensa.observeQuery().subscribe({
-  //     next: (data) => setRecompensas([...data.items])
-  //   });
-
-  //   return subscription;
-  // }
-
-
-
   async function createCategoriasFromInput() {
     const categoriasArray = categoriaInput
       .split(",")
@@ -106,7 +93,10 @@ export default function Configuracion() {
     try {
       await Promise.all(
         categoriasArray.map((nombre) =>
-          client.models.Categoria.create({ nombre })
+          client.models.Categoria.create({ nombre }).then
+            (({ data }) => {
+              console.log("Categoria creada ", data);
+            })
         )
       );
       setCategoriaInput("");
@@ -134,9 +124,13 @@ export default function Configuracion() {
           client.models.Preferencia.create({
             nombre,
             categoriaId: selectedCategoriaId,
+          }).then(({ data }) => {
+            console.log("Preferencia creada ", data);
+            listPreferencias();
           })
         )
       );
+
       setPreferenciaInput("");
     } catch (e) {
       console.error("Error al crear las preferencias", e);
@@ -147,9 +141,10 @@ export default function Configuracion() {
     try {
       const subscription = client.models.Categoria.observeQuery().subscribe({
         next: (data) => {
-          
-          console.log("Categorias",[...data.items] );
-          setCategorias([...data.items])},
+
+          console.log("Categorias", [...data.items]);
+          setCategorias([...data.items])
+        },
       });
       return subscription;
     } catch (e) {
@@ -157,53 +152,28 @@ export default function Configuracion() {
     }
   }
 
-  useEffect(() => {
-    listCategorias();
-    listPreferenciasDeclaradas();
-  }, []);
 
-  function handlePreferenciaClick(preferencia: Schema["Preferencia"]["type"]) {
-    client.models.PreferenciaDeclarada.create({
-      nombre: preferencia.nombre,
-      preferenciaId: preferencia.id,
-      categoriaId: preferencia.categoriaId,
-    }).then(() => {
-      console.log("Preferencia declarada asignada");
-    }).catch((e) => {
-      console.error("Error al declarar la preferencia", e);
-    }).finally(() => {
-      setSelectedPreferencia(preferencia);
-      listPreferenciasDeclaradas();
+
+  function handlePreferenciaClick(id: string) {
+    client.models.Preferencia.delete({ id }).then(({errors}) => {
+      if (errors) {
+        console.error("Error al eliminar preferencia", errors);
+        return;
+      }
+      console.log("Preferencia eliminada");
+      listPreferencias();
     });
   }
-
-  function handlePreferenciaDeclaradaClick(id: string) {
-    client.models.PreferenciaDeclarada.delete({ id }).then(() => {
-      console.log("Preferencia declarada eliminada");
-
-      listPreferenciasDeclaradas();
-    }).catch((e) => {
-      console.error("Error al eliminar la preferencia declarada", e);
-    }
-    );
-  }
-
-
-
-
-
 
   function handleEliminarCategoria(id: string) {
     client.models.Categoria.delete({ id: id });
   }
 
-
-
   return (
     <main className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">{user?.signInDetails?.loginId}'s Data Management</h1>
       <div className="flex flex-wrap gap-8">
-        
+
         {/* Categorías Section */}
         <section className="flex-1 p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
           <InputArea
@@ -239,7 +209,7 @@ export default function Configuracion() {
           <select
             id="categoriaSelect"
             value={selectedCategoriaId ?? ""}
-            onChange={(e) => listPreferencias(e.target)}
+            onChange={(e) => changeCategoriasSelect(e.target)}
             className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring focus:ring-blue-200"
           >
             <option value="" disabled>
@@ -266,7 +236,7 @@ export default function Configuracion() {
               <li
                 key={preferencia.id}
                 className="text-blue-600 cursor-pointer hover:underline"
-                onClick={() => handlePreferenciaClick(preferencia)}
+                onClick={() => handlePreferenciaClick(preferencia.id)}
               >
                 {preferencia.nombre}
               </li>
@@ -274,22 +244,6 @@ export default function Configuracion() {
           </ul>
         </section>
       </div>
-
-      {/* Preferencias Declaradas Section */}
-      <section className="border border-gray-300 p-5 rounded-lg mt-8 shadow-sm">
-        <h2 className="text-xl font-semibold mb-3 text-gray-700">Preferencias Declaradas</h2>
-        <ul className="space-y-2">
-          {preferenciasDeclaradas.map((preferenciaDeclarada) => (
-            <li
-              key={preferenciaDeclarada.id}
-              className="cursor-pointer text-red-600 hover:underline"
-              onClick={() => handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)}
-            >
-              {preferenciaDeclarada.nombre}
-            </li>
-          ))}
-        </ul>
-      </section>
 
       {/* Otros Componentes */}
       <div className="mt-8">
