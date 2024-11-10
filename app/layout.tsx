@@ -1,21 +1,13 @@
 "use client";
+import "../styles/globals.css";
+import React from "react";
+import { ReactNode } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 import { Inter } from "next/font/google";
-import { Amplify } from "aws-amplify";
-import React from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
-import "./app.css";
-
-import { Navbar } from "../src/components/Navbar";
-import { Footer } from "../src/components/Footer";
-
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import createTheme from '@mui/material/styles/createTheme';
-const theme = createTheme({
-  // You can customize your theme here
-});
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,19 +17,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <html lang="en">
-      <body className={inter.className}>
+    <html lang="en">
+      <body className="flex flex-col min-h-screen bg-capitalone-white" >
         <Authenticator>
-          <Navbar />
-          <main>
-            {children}
-          </main>
-          <Footer />
+          <header>
+            <Navbar />
+          </header>
+          <main className="flex-grow container mx-auto p-4">{children}</main>
         </Authenticator>
+        <Footer />
       </body>
     </html>
-    </ThemeProvider>    
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./app.css";
+
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
@@ -11,10 +11,9 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
-const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-	
+const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 import { ChangeEvent } from "react";
-import { a } from "@aws-amplify/backend";
 import { Nullable } from "@aws-amplify/data-schema";
 
 function InputArea({
@@ -35,12 +34,7 @@ function InputArea({
   return (
     <div>
       <h2>{label}</h2>
-      <textarea
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        style={{ width: "100%", height: "100px", marginBottom: "10px" }}
-      />
+      <textarea placeholder={placeholder} value={value} onChange={onChange} />
       <button onClick={onSubmit} disabled={disabled}>
         Crear
       </button>
@@ -96,7 +90,8 @@ export default function App() {
           );
           if (Array.isArray(newCategorizedTransacciones)) {
             newCategorizedTransacciones.map(({ text, category }) => {
-              const deliverDate = Date.now() + (1 * 60 * 1000)-(6*60*60*1000);
+              const deliverDate =
+                Date.now() + 1 * 60 * 1000 - 6 * 60 * 60 * 1000;
               const deliverDateISO = new Date(deliverDate)
                 .toISOString()
                 .substring(0, 19);
@@ -149,38 +144,23 @@ export default function App() {
   }
 
   return (
-    <main>
+    <div className="text-center">
       <h1>Transacciones</h1>
 
-      <section
-        style={{
-          flex: 1,
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-        }}
-      >
+      <section>
         <h3>Transacciones existentes:</h3>
         <table>
           <thead>
             <tr>
               <th>Concepto</th>
               <th>Categoría</th>
-              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {transacciones.map((transaccion) => (
               <tr key={transaccion.id}>
-                <td>{transaccion.concepto}</td>
+                <td className="text-red-500">{transaccion.concepto}</td>
                 <td>{transaccion.categoria?.nombre}</td>
-                <td>
-                  <button
-                    onClick={() => handleDeleteTransaccion(transaccion.id)}
-                  >
-                    Eliminar
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -195,6 +175,6 @@ export default function App() {
           disabled={!transaccionInput.trim()}
         />
       </section>
-    </main>
+    </div>
   );
 }
