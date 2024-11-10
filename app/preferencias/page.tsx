@@ -11,16 +11,37 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
+// Tipos para las entidades
+interface Categoria {
+  id: string;
+  nombre: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Preferencia {
+  id: string;
+  nombre: string;
+  categoriaId: string;
+}
+
+interface PreferenciaDeclarada {
+  id: string;
+  nombre: string;
+  preferenciaId: string;
+  categoriaId: string;
+}
+
 export default function Preferencias() {
-  const [categorias, setCategorias] = useState<Array<Schema["Categoria"]["type"]>>([]);
-  const [preferencias, setPreferencias] = useState<Array<Schema["Preferencia"]["type"]>>([]);
-  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<Array<Schema["PreferenciaDeclarada"]["type"]>>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [preferencias, setPreferencias] = useState<Preferencia[]>([]);
+  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<PreferenciaDeclarada[]>([]);
 
   // Cargar preferencias declaradas primero
   useEffect(() => {
     console.log("Cargando preferencias declaradas");
     const subscription = client.models.PreferenciaDeclarada.observeQuery().subscribe({
-      next: (data) => setPreferenciasDeclaradas([...data.items]),
+      next: (data) => setPreferenciasDeclaradas([...data.items] as PreferenciaDeclarada[]),
       error: (e) => console.error("Error al cargar preferencias declaradas", e),
     });
     return () => subscription.unsubscribe();
@@ -31,7 +52,7 @@ export default function Preferencias() {
     if (preferenciasDeclaradas.length > 0) {
       console.log("Cargando categorías");
       const subscription = client.models.Categoria.observeQuery().subscribe({
-        next: (data) => setCategorias([...data.items]),
+        next: (data) => setCategorias([...data.items] as Categoria[]),
         error: (e) => console.error("Error al cargar las categorías", e),
       });
       return () => subscription.unsubscribe();
@@ -44,7 +65,7 @@ export default function Preferencias() {
       console.log("Cargando y ordenando preferencias");
       client.models.Preferencia.list()
         .then((data) => {
-          const sortedPreferencias = data.data.sort((a, b) => {
+          const sortedPreferencias = (data.data as Preferencia[]).sort((a, b) => {
             const categoriaA = categorias.find((c) => c.id === a.categoriaId)?.nombre || "";
             const categoriaB = categorias.find((c) => c.id === b.categoriaId)?.nombre || "";
             return categoriaA.localeCompare(categoriaB);
@@ -55,24 +76,30 @@ export default function Preferencias() {
     }
   }, [categorias]);
 
-  // Manejo de clics
-  function handlePreferenciaClick(preferencia: Schema["Preferencia"]["type"]) {
+  // Manejo de clics para agregar una preferencia declarada
+  function handlePreferenciaClick(preferencia: Preferencia) {
     client.models.PreferenciaDeclarada.create({
       nombre: preferencia.nombre,
       preferenciaId: preferencia.id,
       categoriaId: preferencia.categoriaId,
     }).then((newPreferenciaDeclarada) => {
-      setPreferenciasDeclaradas((prev) => [...prev, newPreferenciaDeclarada.data]);
+      setPreferenciasDeclaradas((prev) => [
+        ...prev,
+        newPreferenciaDeclarada.data as PreferenciaDeclarada,
+      ]);
     });
   }
 
+  // Manejo de clics para eliminar una preferencia declarada
   function handlePreferenciaDeclaradaClick(preferenciaId: string) {
     console.log("Eliminando preferencia declarada", preferenciaId);
     const preferenciaDeclarada = preferenciasDeclaradas.find((pref) => pref.preferenciaId === preferenciaId);
     if (preferenciaDeclarada) {
-      client.models.PreferenciaDeclarada.delete({ id: preferenciaDeclarada.id }).then(() => {
-        setPreferenciasDeclaradas((prev) => prev.filter((pref) => pref.id !== preferenciaDeclarada.id));
-      }).catch((e) => console.error("Error al eliminar preferencia declarada", e));
+      client.models.PreferenciaDeclarada.delete({ id: preferenciaDeclarada.id })
+        .then(() => {
+          setPreferenciasDeclaradas((prev) => prev.filter((pref) => pref.id !== preferenciaDeclarada.id));
+        })
+        .catch((e) => console.error("Error al eliminar preferencia declarada", e));
     }
   }
 
