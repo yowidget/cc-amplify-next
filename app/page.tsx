@@ -84,8 +84,7 @@ export default function App() {
       .map((item) => transaccionesArray.push(item))
       .filter(Boolean);
 
-    client.queries
-      .categorize({ prompt: transaccionesArray })
+    client.queries.categorize({ prompt: transaccionesArray })
       .then(async ({ data: categorizedTransacciones, errors }) => {
         if (errors)
           throw console.error("Error al categorizar las transacciones", errors);
