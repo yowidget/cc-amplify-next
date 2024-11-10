@@ -96,7 +96,7 @@ export default function App() {
           );
           if (Array.isArray(newCategorizedTransacciones)) {
             newCategorizedTransacciones.map(({ text, category }) => {
-              const deliverDate = Date.now() + (1 * 20 * 1000)-(6*60*60*1000);
+              const deliverDate = Date.now() + (1 * 60 * 1000)-(6*60*60*1000);
               const deliverDateISO = new Date(deliverDate)
                 .toISOString()
                 .substring(0, 19);
