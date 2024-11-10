@@ -10,7 +10,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import Setup from "./setup";
 import Recompensas from "./recompensas";
-import PreferenciasDeclaradas from "@/src/cruds/preferenciasDeclaradas"
+import PreferenciasDeclaradas from "@/src/cruds/recompensaCategorias"
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();

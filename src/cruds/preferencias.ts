@@ -36,7 +36,7 @@ const get = async (id: string): Promise<Preferencia> => {
     }
 };
 
-const post = async (preferencia: {"Schema["Preferencia"]["type"]"}): Promise<Preferencia> => {
+const post = async (preferencia: Schema["Preferencia"]["type"]): Promise<Preferencia> => {
     const { errors, data: newPreferencia } = await client.models.Preferencia.create({
         id: preferencia.id,
         nombre: preferencia.nombre,

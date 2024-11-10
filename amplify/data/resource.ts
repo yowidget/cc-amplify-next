@@ -55,7 +55,6 @@ const schema = a
     .model({
       nombre: a.string().required(),
       preferencias: a.hasMany("Preferencia", "categoriaId"),
-      recompensas: a.hasMany("Recompensa", "categoriaId"),
       transacciones: a.hasMany("Transaccion", "categoriaId"),
       recompensaCategorias: a.hasMany("RecompensaCategoria", "categoriaId"),
     })
@@ -79,40 +78,33 @@ const schema = a
     })
     .authorization((allow) => [allow.owner()]),
 
-    Recompensa: a
-      .model({
-        nombre: a.string(),
-        categoriaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
-        location: a.customType({
-          lat: a.float().required(),
-          long: a.float().required(),
-        }),
-        RecompensaPreferencias: a.hasMany(
-          "RecompensaPreferencia",
-          "recompensaId"
-        ),
-        RecompensaCategorias: a.hasMany("RecompensaCategoria", "recompensaId"),
-      })
-      .authorization((allow) => [allow.authenticated()]),
+  Recompensa: a
+    .model({
+      nombre: a.string().required(),
+      location: a.customType({
+        lat: a.float().required(),
+        long: a.float().required(),
+      }),
+      RecompensaPreferencias: a.hasMany("RecompensaPreferencia", "recompensaId"),
+      RecompensaCategorias: a.hasMany("RecompensaCategoria", "recompensaId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
 
-    RecompensaPreferencia: a
-      .model({
-        preferenciaId: a.id(),
-        recompensaId: a.id(),
-        preferencia: a.belongsTo("Preferencia", "preferenciaId"),
-        recompensa: a.belongsTo("Recompensa", "recompensaId"),
-      })
-      .authorization((allow) => [allow.authenticated()]),
+  RecompensaPreferencia: a
+    .model({
+      preferenciaId: a.id().required(),
+      recompensaId: a.id().required(),
+      preferencia: a.belongsTo("Preferencia", "preferenciaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
 
-    RecompensaCategoria: a
-      .model({
-        categoriaId: a.id(),
-        recompensaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
-        recompensa: a.belongsTo("Recompensa", "recompensaId"),
-      })
-      .authorization((allow) => [allow.authenticated()]),
+  RecompensaCategoria: a
+    .model({
+      categoriaId: a.id().required(),
+      recompensaId: a.id().required(),
+      categoria: a.belongsTo("Categoria", "categoriaId"),
+      recompensa: a.belongsTo("Recompensa", "recompensaId"),
+    }).authorization((allow) => [allow.authenticated()]),
 
     categorize: a
       .query()

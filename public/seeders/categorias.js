@@ -1,4 +1,3 @@
-
 export default [
     { id: "alimentacion_y_bebidas", nombre: "Alimentación y Bebidas" },
     { id: "delivery_de_comida", nombre: "Delivery de Comida" },
@@ -18,6 +17,6 @@ export default [
     { id: "impuestos_y_tarifas", nombre: "Impuestos y Tarifas" },
     { id: "inversiones", nombre: "Inversiones" },
     { id: "servicios_publicos", nombre: "Servicios Públicos" },
-    { id: "cuotas_membresias", nombre: "Cuotas o Membresías" },
-    { id: "transacciones_no_relevantes", nombre: "Transacciones No Relevantes" }
-]
+    { id: "cuotas_o_membresias", nombre: "Cuotas o Membresías" },
+    { id: "transacciones_no_relevantes", nombre: "Transacciones No Relevantes" },
+];
