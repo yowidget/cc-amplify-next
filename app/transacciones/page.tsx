@@ -134,13 +134,21 @@ export default function App() {
       });
   }
 
+  async function handleDeleteTransaccion(id: string) {
+    client.models.Transaccion.delete({ id }).then(({ data, errors }) => {
+      if (errors)
+        throw console.error("Error al eliminar la transacción", errors);
+      console.log("Transacción eliminada", id);
+      loadTransacciones();
+    });
+  }
+
   return (
-    <div className="flex flex-col">
-      <h1>Welcome back to travel</h1>
+    <div className="text-center">
+      <h1>Transacciones</h1>
+
       <section>
-        <h2>Hoy para ti</h2>
-      </section>
-      <section>
+        <h3>Transacciones existentes:</h3>
         <table>
           <thead>
             <tr>
