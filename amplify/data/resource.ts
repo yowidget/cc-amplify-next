@@ -78,17 +78,24 @@ const schema = a
     })
     .authorization((allow) => [allow.owner()]),
 
-  Recompensa: a
-    .model({
-      nombre: a.string().required(),
-      location: a.customType({
-        lat: a.float().required(),
-        long: a.float().required(),
-      }),
-      RecompensaPreferencias: a.hasMany("RecompensaPreferencia", "recompensaId"),
-      RecompensaCategorias: a.hasMany("RecompensaCategoria", "recompensaId"),
-    })
-    .authorization((allow) => [allow.authenticated()]),
+    Recompensa: a
+      .model({
+        nombre: a.string(),
+        detalles: a.string(),
+        categoriaId: a.id(),
+        categoria: a.belongsTo("Categoria", "categoriaId"),
+        img: a.string(),
+        location: a.customType({
+          lat: a.float().required(),
+          long: a.float().required(),
+        }),
+        RecompensaPreferencias: a.hasMany(
+          "RecompensaPreferencia",
+          "recompensaId"
+        ),
+        RecompensaCategorias: a.hasMany("RecompensaCategoria", "recompensaId"),
+      })
+      .authorization((allow) => [allow.authenticated()]),
 
   RecompensaPreferencia: a
     .model({

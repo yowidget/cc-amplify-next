@@ -3,19 +3,17 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./../../app/app.css";
-import "./styles.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
 
-import { RecompensaCard } from "../../src/components/RecompensaCard";
+import { RecompensaCard } from "./RecompensaCard";
 
 const client = generateClient<Schema>();
 
-export default function MisRecompensas() {
+export default function RecompensasSugeridas() {
   const [categoriasId, setCategoriasIds] = useState<Array<string>>([]);
   const [recompensas, setRecompensas] = useState<
   Array<{ 
@@ -102,21 +100,8 @@ export default function MisRecompensas() {
 
   return (
     <>
-      <h1>{user?.signInDetails?.loginId}'s Recompensas</h1>
       <section className="seccion-recompensas">
-        <h3>Preferencias Declaradas:</h3>
-        <div className="slider">
-          <div className="slider-track">
-          {preferenciasDeclaradas.map((preferencia) => (
-            <div key={preferencia.id} className="slider-item">
-              {preferencia.nombre} - {preferencia.categoria?.nombre || "Sin categoria"}{" "}
-            </div>
-          ))}
-          </div>
-        </div>
-      </section>
-      <section className="seccion-recompensas">
-        <h3>Recompensas personalizadas:</h3>
+        <h3>Hoy para ti:</h3>
         <div className="recompensas-list">
           {recompensas
             .filter((recompensa) =>

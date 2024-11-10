@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./../../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
@@ -15,7 +14,6 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-
 interface InputAreaProps {
   label: string;
   placeholder: string;
@@ -25,25 +23,23 @@ interface InputAreaProps {
   disabled: boolean;
 }
 
-
-function InputArea({
-  label,
-  placeholder,
-  value,
-  onChange,
-  onSubmit,
-  disabled,
-}: InputAreaProps) {
+function InputArea({ label, placeholder, value, onChange, onSubmit, disabled }: InputAreaProps) {
   return (
-    <div>
-      <h2>{label}</h2>
+    <div className="mb-6">
+      <h2 className="text-lg font-semibold text-gray-700 mb-2">{label}</h2>
       <textarea
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        style={{ width: "100%", height: "100px", marginBottom: "10px" }}
+        className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring focus:ring-blue-200 mb-2"
       />
-      <button onClick={onSubmit} disabled={disabled}>
+      <button
+        onClick={onSubmit}
+        disabled={disabled}
+        className={`w-full py-2 px-4 rounded-lg text-white transition duration-200 ${
+          disabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+        }`}
+      >
         Crear
       </button>
     </div>
@@ -204,19 +200,12 @@ export default function Configuracion() {
 
 
   return (
-    <main>
-      <button onClick={() => console.log(PreferenciasDeclaradas.getAll())}></button>
-      <h1>{user?.signInDetails?.loginId}'s Data Management</h1>
-      <div style={{ display: "flex", gap: "20px" }}>
-        {/* Sección para Categorias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
+    <main className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">{user?.signInDetails?.loginId}'s Data Management</h1>
+      <div className="flex flex-wrap gap-8">
+        
+        {/* Categorías Section */}
+        <section className="flex-1 p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
           <InputArea
             label="Agregar Categorías"
             placeholder="Ingresa las categorías separadas por coma"
@@ -225,32 +214,33 @@ export default function Configuracion() {
             onSubmit={createCategoriasFromInput}
             disabled={!categoriaInput.trim()}
           />
-          <h3>Categorías existentes:</h3>
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            <ul>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Categorías Existentes:</h3>
+          <div className="max-h-64 overflow-y-auto">
+            <ul className="space-y-2">
               {categorias.map((categoria) => (
-                <li key={categoria.id} onClick={() => handleEliminarCategoria(categoria.id)}>{categoria.nombre} - {categoria.id}</li>
+                <li
+                  key={categoria.id}
+                  className="text-blue-600 cursor-pointer hover:underline"
+                  onClick={() => handleEliminarCategoria(categoria.id)}
+                >
+                  {categoria.nombre} - {categoria.id}
+                </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* Sección para Preferencias */}
-        <section
-          style={{
-            flex: 1,
-            border: "1px solid #ccc",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <h2>Agregar Preferencias</h2>
-          <label htmlFor="categoriaSelect">Selecciona una categoría:</label>
+        {/* Preferencias Section */}
+        <section className="flex-1 p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Agregar Preferencias</h2>
+          <label htmlFor="categoriaSelect" className="block mb-2 text-gray-600">
+            Selecciona una categoría:
+          </label>
           <select
             id="categoriaSelect"
             value={selectedCategoriaId ?? ""}
             onChange={(e) => listPreferencias(e.target)}
-            style={{ width: "100%", marginBottom: "10px" }}
+            className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring focus:ring-blue-200"
           >
             <option value="" disabled>
               -- Selecciona una categoría --
@@ -270,12 +260,12 @@ export default function Configuracion() {
             onSubmit={createPreferenciasFromInput}
             disabled={!preferenciaInput.trim() || !selectedCategoriaId}
           />
-          <h3>Preferencias existentes:</h3>
-          <ul>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Preferencias Existentes:</h3>
+          <ul className="space-y-2">
             {preferencias.map((preferencia) => (
               <li
                 key={preferencia.id}
-                style={{ cursor: "pointer", color: "blue" }}
+                className="text-blue-600 cursor-pointer hover:underline"
                 onClick={() => handlePreferenciaClick(preferencia)}
               >
                 {preferencia.nombre}
@@ -285,24 +275,15 @@ export default function Configuracion() {
         </section>
       </div>
 
-      {/* Sección para PreferenciasDeclaradas */}
-      <section
-        style={{
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
-        <h2>Preferencias Declaradas</h2>
-        <ul>
+      {/* Preferencias Declaradas Section */}
+      <section className="border border-gray-300 p-5 rounded-lg mt-8 shadow-sm">
+        <h2 className="text-xl font-semibold mb-3 text-gray-700">Preferencias Declaradas</h2>
+        <ul className="space-y-2">
           {preferenciasDeclaradas.map((preferenciaDeclarada) => (
             <li
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() =>
-                handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)
-              }
               key={preferenciaDeclarada.id}
+              className="cursor-pointer text-red-600 hover:underline"
+              onClick={() => handlePreferenciaDeclaradaClick(preferenciaDeclarada.id)}
             >
               {preferenciaDeclarada.nombre}
             </li>
@@ -310,10 +291,16 @@ export default function Configuracion() {
         </ul>
       </section>
 
-      <Recompensas />
-      <Setup />
+      {/* Otros Componentes */}
+      <div className="mt-8">
+        <Recompensas />
+        <Setup />
+      </div>
 
-      <button onClick={signOut} style={{ marginTop: "20px" }}>
+      <button
+        onClick={signOut}
+        className="mt-6 w-full py-2 text-white bg-red-500 rounded-lg hover:bg-red-600 transition duration-200"
+      >
         Sign out
       </button>
     </main>
