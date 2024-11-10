@@ -103,7 +103,7 @@ export default function Transacciones({
           }
         }
       )
-      .catch((e:any) => {
+      .catch((e: any) => {
         console.error("Error al crear las transacciones", e);
       })
       .finally(() => {
@@ -113,55 +113,66 @@ export default function Transacciones({
       });
   }
   return (
-    <section>
-      <div className="flex flex-col items-center justify-center bg-gray-100 p-4">
-        <h1 className="text-3xl font-bold mb-6">Nueva Transacción</h1>
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            value={transaccionInput}
-            onChange={(e) => setTransaccionInput(e.target.value)}
-            placeholder="Ingrese el valor de la transacción"
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-capitalone-blue"
-            disabled={isSending}
-          />
-          <button
-            onClick={createTransaccionFromInput}
-            className="px-4 py-2 bg-capitalone-red text-white rounded-md hover:bg-capitalone-red-dark"
-            disabled={!transaccionInput.trim() || isSending}
-          >
-            {isSending ? "Enviando..." : "Agregar"}
-          </button>
-        </div>
+    <div>
+      <section className="bg-capitalone-blue text-white p-6 gap-2 flex flex-col items-center justify-center">
+        <h2>
+         Usar tu tarjeta te brinda muchas recompensas.
+        </h2>
 
-        <h2 className="text-2xl font-bold mb-4">Tus transacciones</h2>
-        <div className="max-h-80 overflow-y-auto border border-gray-300 rounded-md shadow-sm">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600">
-                  Concepto
-                </th>
-                <th className="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600">
-                  Categoría
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {transacciones.map((transaccion) => (
-                <tr key={transaccion.id}>
-                  <td className="px-4 py-2 border-b border-gray-200 text-sm text-gray-700">
-                    {transaccion.concepto}
-                  </td>
-                  <td className="px-4 py-2 border-b border-gray-200 text-sm text-gray-700">
-                    {transaccion.categoria?.nombre}
-                  </td>
+        <p>
+        Registra los conceptos de tus compras, viajes, vuelos, etc. y recibe recomendaciones personalizadas de recompensas.
+        </p>
+      </section>
+      <section>
+        <div className="flex flex-col bg-gray-100 p-4">
+          <h1 className="text-xl font-bold  mb-2">Registra tus compras</h1>
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={transaccionInput}
+              onChange={(e) => setTransaccionInput(e.target.value)}
+              placeholder="Concepto"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-capitalone-blue"
+              disabled={isSending}
+            />
+            <button
+              onClick={createTransaccionFromInput}
+              className="px-4 py-2 bg-capitalone-red text-white rounded-md hover:bg-capitalone-red-dark"
+              disabled={!transaccionInput.trim() || isSending}
+            >
+              {isSending ? "Enviando..." : "Agregar"}
+            </button>
+          </div>
+
+          <h2 className=" text-lg font-bold my-4">Compras registradas</h2>
+          <div className="max-h-80 overflow-y-auto border border-gray-300 rounded-md shadow-sm">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600">
+                    Concepto
+                  </th>
+                  <th className="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600">
+                    Categoría
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {transacciones.map((transaccion) => (
+                  <tr key={transaccion.id}>
+                    <td className="px-4 py-2 border-b border-gray-200 text-sm text-gray-700">
+                      {transaccion.concepto}
+                    </td>
+                    <td className="px-4 py-2 border-b border-gray-200 text-sm text-gray-700">
+                      {transaccion.categoria?.nombre}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
