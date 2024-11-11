@@ -102,6 +102,8 @@ export default function Configuracion() {
       setCategoriaInput("");
     } catch (e) {
       console.error("Error al crear las categorías", e);
+    } finally {
+      listCategorias();
     }
   }
 
@@ -184,31 +186,31 @@ export default function Configuracion() {
           />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Categorías Existentes:</h3>
           <div className="max-h-64 overflow-y-auto">
-            <div className="max-h-[400px] overflow-y-auto">
-              <ul className="space-y-2">
-                {categorias.map((categoria) => (
-                  <li
-                    key={categoria.id}
-                    className="flex justify-between items-center border-b border-gray-300 pb-2"
-                  >
-                    {/* Primera columna (70%) */}
-                    <div className="w-[70%]">
-                      <div className="text-sm font-semibold">{categoria.nombre}</div>
-                    </div>
 
-                    {/* Segunda columna (30%) */}
-                    <div className="w-[30%] flex justify-end">
-                      <button
-                        className="bg-red-600 text-white px-4 py-2 rounded-md"
-                        onClick={() => handleEliminarCategoria(categoria.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="space-y-2">
+              {categorias.map((categoria) => (
+                <li
+                  key={categoria.id}
+                  className="flex justify-between items-center border-b border-gray-300 pb-2"
+                >
+                  {/* Primera columna (70%) */}
+                  <div className="w-[70%]">
+                    <div className="text-sm font-semibold">{categoria.nombre}</div>
+                  </div>
+
+                  {/* Segunda columna (30%) */}
+                  <div className="w-[30%] flex justify-end">
+                    <button
+                      className="bg-red-600 text-white px-4 py-2 rounded-md"
+                      onClick={() => handleEliminarCategoria(categoria.id)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
 
           </div>
         </section>
