@@ -18,5 +18,6 @@ export default [
     { nombre: "Inversiones" },
     { nombre: "Servicios Públicos" },
     { nombre: "Cuotas o Membresías" },
-    { nombre: "Transacciones No Relevantes" }
+    { nombre: "Transacciones No Relevantes" },
+    { nombre: "Viajes" }
 ];

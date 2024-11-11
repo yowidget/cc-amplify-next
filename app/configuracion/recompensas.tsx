@@ -45,7 +45,7 @@ export default function Recompensas() {
 
   function loadRecompensas() {
     client.models.Recompensa.list({
-      selectionSet: ["id", "nombre", "detalles", "categoria.*", "img"],
+      selectionSet: ["id", "nombre", "detalles", "img"],
     }).then(({ data, errors }) => {
       if (errors)
         throw console.error("Error al obtener las recompensas", errors);
@@ -53,17 +53,17 @@ export default function Recompensas() {
     });
   }
 
-  function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
-    client.models.Recompensa.update({ id, categoriaId })
-      .then(() => {
-        console.log(
-          `Recompensa ${id} actualizada con la categoría ${categoriaId}`
-        );
-      })
-      .catch((e) =>
-        console.error(`Error al actualizar la recompensa ${id}`, e)
-      );
-  }
+  // function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
+  //   client.models.Recompensa.update({ id, categoriaId })
+  //     .then(() => {
+  //       console.log(
+  //         `Recompensa ${id} actualizada con la categoría ${categoriaId}`
+  //       );
+  //     })
+  //     .catch((e) =>
+  //       console.error(`Error al actualizar la recompensa ${id}`, e)
+  //     );
+  // }
 
   function handleEliminarRecompensa(id: string) {
     client.models.Recompensa.get({ id })
@@ -88,21 +88,26 @@ export default function Recompensas() {
   const CreateRecompensa: React.FC = () => {
     const [recompensaName, setRecompensaName] = useState("");
     const [recompensaDetails, setRecompensaDetails] = useState("");
-    const [file, setFile] = useState<File | null>(null); // Estado para el archivo
+    const [file, setFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>("");
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Estado para categorías seleccionadas
-    const [categories, setCategories] = useState<
-      { id: string; nombre: string }[]
-    >([]); // Estado para las categorías disponibles
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [categories, setCategories] = useState<{ id: string; nombre: string }[]>([]);
+    const [preferences, setPreferences] = useState<{ id: string; nombre: string; categoriaId: string }[]>([]);
+    const [selectedPreferences, setSelectedPreferences] = useState<{ [key: string]: string[] }>({});
 
     useEffect(() => {
-      // Suponemos que las categorías disponibles se obtienen desde un API o base de datos
       const fetchCategories = async () => {
-        const response = await client.models.Categoria.list(); // Método para obtener todas las categorías
+        const response = await client.models.Categoria.list();
         setCategories(response.data);
       };
 
+      const fetchPreferences = async () => {
+        const response = await client.models.Preferencia.list();
+        setPreferences(response.data);
+      };
+
       fetchCategories();
+      fetchPreferences();
     }, []);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,13 +121,29 @@ export default function Recompensas() {
     const handleCategorySelect = (categoryId: string) => {
       if (!selectedCategories.includes(categoryId)) {
         setSelectedCategories([...selectedCategories, categoryId]);
+        setSelectedPreferences({ ...selectedPreferences, [categoryId]: [] });
       }
     };
 
     const handleCategoryRemove = (categoryId: string) => {
-      setSelectedCategories(
-        selectedCategories.filter((id) => id !== categoryId)
-      );
+      setSelectedCategories(selectedCategories.filter((id) => id !== categoryId));
+      const updatedPreferences = { ...selectedPreferences };
+      delete updatedPreferences[categoryId];
+      setSelectedPreferences(updatedPreferences);
+    };
+
+    const handlePreferenceSelect = (categoryId: string, preferenceId: string) => {
+      setSelectedPreferences((prev) => ({
+        ...prev,
+        [categoryId]: [...(prev[categoryId] || []), preferenceId]
+      }));
+    };
+
+    const handlePreferenceRemove = (categoryId: string, preferenceId: string) => {
+      setSelectedPreferences((prev) => ({
+        ...prev,
+        [categoryId]: prev[categoryId].filter((id) => id !== preferenceId)
+      }));
     };
 
     async function createRecompensaFromInput() {
@@ -135,8 +156,6 @@ export default function Recompensas() {
         });
 
         if (recompensa) {
-          console.log(`Recompensa ${recompensa.nombre} creada`);
-
           const result = await uploadData({
             path: `images/${recompensa.id}-${file.name}`,
             data: file,
@@ -148,50 +167,36 @@ export default function Recompensas() {
             img: result?.path,
           });
 
-          // Crear relaciones de categorías
-
           selectedCategories.forEach((categoryId) => {
             client.models.RecompensaCategoria.create({
               recompensaId: recompensa.id,
               categoriaId: categoryId,
-            })
-              .then(() => {
-                console.log(
-                  `Categoría ${categoryId} asignada a la recompensa ${recompensa.id}`
-                );
-              })
-              .catch((e) => {
-                console.error(
-                  `Error al asignar la categoría ${categoryId} a la recompensa ${recompensa.id}`,
-                  e
-                );
+            });
+
+            selectedPreferences[categoryId].forEach((preferenceId) => {
+              client.models.RecompensaPreferencia.create({
+                recompensaId: recompensa.id,
+                preferenciaId: preferenceId,
               });
+            });
           });
         }
       } catch (error) {
         console.error(`Error al crear la recompensa ${recompensaName}`, error);
       } finally {
-        loadRecompensas();
+        console.log("Recompensa creada exitosamente");
         setRecompensaName("");
         setRecompensaDetails("");
         setFile(null);
         setImagePreview("");
-        setSelectedCategories([]); // Limpiamos las categorías seleccionadas
+        setSelectedCategories([]);
+        setSelectedPreferences({});
       }
-    }
-
-    function test() {
-      client.models.RecompensaCategoria.list().then(({ data }) => {
-        console.log(data);
-      });
     }
 
     return (
       <div className="p-6 bg-white shadow-md rounded-lg">
-        {/* <button onClick={()=>test()}>Recargar</button> */}
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-          Agregar Recompensas
-        </h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Agregar Recompensas</h2>
         <input
           type="text"
           value={recompensaName}
@@ -234,30 +239,56 @@ export default function Recompensas() {
           </select>
         </div>
 
-        <div className="mb-4">
-          <h3 className="font-bold text-gray-800">Categorías Seleccionadas</h3>
-          <ul className="space-y-2">
-            {selectedCategories.map((categoryId) => {
-              const category = categories.find((c) => c.id === categoryId);
-              return (
-                category && (
-                  <li
-                    key={categoryId}
-                    className="flex justify-between items-center"
+        {selectedCategories.map((categoryId) => {
+          const category = categories.find((c) => c.id === categoryId);
+          return (
+            category && (
+              <div key={categoryId} className="mb-4 border-b pb-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-gray-800">{category.nombre}</h4>
+                  <button
+                    onClick={() => handleCategoryRemove(categoryId)}
+                    className="text-red-500 hover:text-red-700"
                   >
-                    <span>{category.nombre}</span>
-                    <button
-                      onClick={() => handleCategoryRemove(categoryId)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Eliminar
-                    </button>
-                  </li>
-                )
-              );
-            })}
-          </ul>
-        </div>
+                    Eliminar Categoría
+                  </button>
+                </div>
+                <select
+                  onChange={(e) => handlePreferenceSelect(categoryId, e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 mt-2"
+                >
+                  <option value="">Seleccionar Preferencia</option>
+                  {preferences
+                    .filter((preference) => preference.categoriaId === categoryId)
+                    .map((preference) => (
+                      <option key={preference.id} value={preference.id}>
+                        {preference.nombre}
+                      </option>
+                    ))}
+                </select>
+
+                <ul className="space-y-2 mt-2">
+                  {selectedPreferences[categoryId]?.map((preferenceId) => {
+                    const preference = preferences.find((p) => p.id === preferenceId);
+                    return (
+                      preference && (
+                        <li key={preferenceId} className="flex justify-between items-center">
+                          <span>{preference.nombre}</span>
+                          <button
+                            onClick={() => handlePreferenceRemove(categoryId, preferenceId)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Eliminar Preferencia
+                          </button>
+                        </li>
+                      )
+                    );
+                  })}
+                </ul>
+              </div>
+            )
+          );
+        })}
 
         <button
           onClick={createRecompensaFromInput}
@@ -269,6 +300,9 @@ export default function Recompensas() {
       </div>
     );
   };
+
+
+
 
   useEffect(() => {
     loadRecompensas();
@@ -339,8 +373,8 @@ export default function Recompensas() {
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {recompensas.map((recompensa) => (
               <li key={recompensa.id}>
-                <div>
-              
+                {/* <div>
+
                   <select
                     id={`categoriaSelect-${recompensa.id}`}
                     value={recompensa.categoriaId ?? ""}
@@ -361,7 +395,7 @@ export default function Recompensas() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
                 <RecompensaItem recompensa={recompensa} />
               </li>
             ))}

@@ -67,8 +67,8 @@ const schema = a
 
     Preferencia: a
       .model({
-        nombre: a.string(),
-        categoriaId: a.id(),
+        nombre: a.string().required(),
+        categoriaId: a.id().required(),
         categoria: a.belongsTo("Categoria", "categoriaId"),
         RecompensaPreferencias: a.hasMany(
           "RecompensaPreferencia",

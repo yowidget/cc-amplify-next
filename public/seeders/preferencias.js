@@ -125,5 +125,17 @@ export default [
   { nombre: "Transferencia bancaria", categoriaId: "Transacciones No Relevantes" },
   { nombre: "Pago de tarjeta de crédito", categoriaId: "Transacciones No Relevantes" },
   { nombre: "Depósito de efectivo", categoriaId: "Transacciones No Relevantes" },
-  { nombre: "Devolución de compra", categoriaId: "Transacciones No Relevantes" }
+  { nombre: "Devolución de compra", categoriaId: "Transacciones No Relevantes" },
+
+  { nombre: "Aeroméxico", categoriaId: "Viajes" },
+  { nombre: "Volaris", categoriaId: "Viajes" },
+  { nombre: "Booking", categoriaId: "Viajes" },
+  { nombre: "Airbnb", categoriaId: "Viajes" },
+  { nombre: "Expedia", categoriaId: "Viajes" },
+  { nombre: "Despegar", categoriaId: "Viajes" },
+  { nombre: "RappiTravel", categoriaId: "Viajes" },
+  { nombre: "BestDay", categoriaId: "Viajes" },
+  { nombre: "Uber", categoriaId: "Viajes" },
+  { nombre: "Cabify", categoriaId: "Viajes" },
+
 ];
