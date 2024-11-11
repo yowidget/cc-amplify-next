@@ -12,13 +12,11 @@ interface Recompensa {
   id: string;
   nombre: Nullable<string>;
   detalles: Nullable<string>;
-  categoriaId: Nullable<string>;
-  categoria: {
+  categorias?: {
     nombre: string;
     id: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+    preferencias?: { id: string; nombre: string }[];
+  }[];
   img?: string;
 }
 
@@ -44,26 +42,68 @@ export default function Recompensas() {
   }
 
   function loadRecompensas() {
-    client.models.Recompensa.list({
-      selectionSet: ["id", "nombre", "detalles", "img"],
-    }).then(({ data, errors }) => {
-      if (errors)
-        throw console.error("Error al obtener las recompensas", errors);
-      setRecompensas(data as Recompensa[]);
+    // client.models.Recompensa.list({
+    //   selectionSet: ["id", "nombre", "detalles", "img"],
+    // }).then(({ data, errors }) => {
+    //   if (errors)
+    //     throw console.error("Error al obtener las recompensas", errors);
+    //   setRecompensas(data as Recompensa[]);
+    // });
+
+    async function getRecompensas(): Promise<Recompensa[]>{
+      const { data, errors } = await client.models.Recompensa.list({
+        selectionSet: ["id", "nombre", "detalles", "img"],
+      });
+
+      if (errors) {
+        console.error("Error al obtener las recompensas", errors);
+      }
+      const recompensas = await Promise.all(data.map(async (recompensa) => {
+        const { data: categoriasData, errors: categoriasErrors } = await client.models.RecompensaCategoria.list({
+          filter: { recompensaId: { eq: recompensa.id } },
+          selectionSet: ["categoriaId"],
+        });
+        if (categoriasErrors) {
+          console.error("Error al obtener las categorías de la recompensa", categoriasErrors);
+        }
+        const categorias = await Promise.all(categoriasData.map(async (categoria) => {
+          const { data: categoriaData, errors: categoriaErrors } = await client.models.Categoria.list({
+            filter: { id: { eq: categoria?.categoriaId || "" } },
+            selectionSet: ["id", "nombre"],
+          });
+          if (categoriaErrors) {
+            console.error("Error al obtener la categoría de la recompensa", categoriaErrors);
+          }
+
+          const { data, errors: preferenciasErrors } = await client.models.RecompensaPreferencia.list({
+            filter: { recompensaId: { eq: recompensa?.id || "" } },
+            selectionSet: ["preferenciaId"],
+          });
+          if (preferenciasErrors) {
+            console.error("Error al obtener las preferencias de la categoría", preferenciasErrors);
+          }
+          const preferencias = await Promise.all(data.map(async (preferencia) => {
+            const { data: preferenciaData, errors: preferenciaErrors } = await client.models.Preferencia.list({
+              filter: { id: { eq: preferencia?.preferenciaId || "" } },
+              selectionSet: ["id", "nombre"],
+            });
+            if (preferenciaErrors) {
+              console.error("Error al obtener la preferencia de la categoría", preferenciaErrors);
+            }
+            return preferenciaData[0];
+          }))
+          return { ...categoriaData[0], preferencias: preferencias };
+
+        }));
+        return { ...{id: recompensa.id, nombre: recompensa.nombre, detalles: recompensa.detalles, img: recompensa.img || ""}, categorias };
+      }));
+      return recompensas;
+    }
+    getRecompensas().then(async (recompensas) => {
+      const resolvedRecompensas = await Promise.all(recompensas);
+      setRecompensas(resolvedRecompensas);
     });
   }
-
-  // function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
-  //   client.models.Recompensa.update({ id, categoriaId })
-  //     .then(() => {
-  //       console.log(
-  //         `Recompensa ${id} actualizada con la categoría ${categoriaId}`
-  //       );
-  //     })
-  //     .catch((e) =>
-  //       console.error(`Error al actualizar la recompensa ${id}`, e)
-  //     );
-  // }
 
   function handleEliminarRecompensa(id: string) {
     client.models.Recompensa.get({ id })
@@ -191,6 +231,7 @@ export default function Recompensas() {
         setImagePreview("");
         setSelectedCategories([]);
         setSelectedPreferences({});
+        loadRecompensas();
       }
     }
 
@@ -339,12 +380,34 @@ export default function Recompensas() {
         {/* Contenido de la tarjeta */}
         <div className="p-4">
           {/* Título */}
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {recompensa.nombre}
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800">{recompensa.nombre}</h2>
 
           {/* Descripción */}
           <p className="text-gray-600 mt-2 mb-4">{recompensa.detalles}</p>
+
+          {/* Categorías */}
+          {recompensa.categorias?.map((categoria) => (
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-gray-800">Categoría:</h3>
+              <p className="text-gray-600">{categoria.nombre}</p>
+
+              {/* Preferencias dentro de la categoría */}
+              {categoria.preferencias && categoria.preferencias.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="font-semibold text-gray-800">Preferencias:</h4>
+                  <ul className="list-disc pl-5">
+                    {categoria.preferencias.map((preferencia) => (
+                      <li key={preferencia.id} className="text-gray-600">
+                        {preferencia.nombre}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))
+
+          }
 
           {/* Botón Eliminar */}
           <button
@@ -358,50 +421,66 @@ export default function Recompensas() {
     );
   };
 
-  return (
-    <section className="flex-1 border border-gray-300 p-6 rounded-lg mt-8 bg-gray-50">
-      <div className="mb-8">
-        <div className="w-full lg:w-1/2">
-          <CreateRecompensa />
-        </div>
-      </div>
-      <div className="space-y-6">
-        <h3 className="text-3xl font-bold text-gray-900 mb-6">
-          Recompensas existentes:
-        </h3>
-        <div className="overflow-y-auto max-h-[400px]">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recompensas.map((recompensa) => (
-              <li key={recompensa.id}>
-                {/* <div>
+  const RecompensasList: React.FC = () => {
+    // Aquí debes manejar la lógica de las recompensas y pasarlas como prop
 
-                  <select
-                    id={`categoriaSelect-${recompensa.id}`}
-                    value={recompensa.categoriaId ?? ""}
-                    onChange={(e) =>
-                      handleRecompensaCategoriaChange(
-                        recompensa.id,
-                        e.target.value
-                      )
-                    }
-                    style={{ width: "100%", marginBottom: "10px" }}
-                  >
-                    <option value="" disabled>
-                      -- Selecciona una categoría --
-                    </option>
-                    {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
-                        {categoria.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
-                <RecompensaItem recompensa={recompensa} />
-              </li>
-            ))}
-          </ul>
+
+
+    useEffect(() => {
+
+    }, []);
+
+    // getRecompensas().then(async (recompensas) => {
+    //   const resolvedRecompensas = await Promise.all(recompensas);
+    //   setRecompensas(resolvedRecompensas as Recompensa[]);
+    // });
+
+
+    // const recompensas: Recompensa[] = [
+    //   {
+    //     id: "1",
+    //     nombre: "Recompensa 1",
+    //     detalles: "Detalles de recompensa 1",
+    //     categoriaId: "cat1",
+    //     categorias: [{
+    //       nombre: "Categoría 1",
+    //       id: "cat1",
+    //       createdAt: "2024-01-01",
+    //       updatedAt: "2024-01-01",
+    //       preferencias: [
+    //         { id: "pref1", nombre: "Preferencia A" },
+    //         { id: "pref2", nombre: "Preferencia B" },
+    //       ],
+    //     }],
+    //     img: "path/to/image.jpg",
+    //   },
+    //   // Más recompensas...
+    // ];
+
+    return (
+      <section className="flex-1 border border-gray-300 p-6 rounded-lg mt-8 bg-gray-50">
+        <div className="mb-8">
+          <div className="w-full lg:w-1/2">
+            <CreateRecompensa />
+          </div>
         </div>
-      </div>
-    </section>
+        <div className="space-y-6">
+          <h3 className="text-3xl font-bold text-gray-900 mb-6">Recompensas existentes:</h3>
+          <div className="overflow-y-auto max-h-[400px]">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recompensas.map((recompensa) => (
+                <li key={recompensa.id}>
+                  <RecompensaItem recompensa={recompensa} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  return (
+    <RecompensasList />
   );
 }

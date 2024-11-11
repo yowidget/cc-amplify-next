@@ -117,6 +117,9 @@ export default function Setup() {
             })
         );
 
+        console.log("Recompensas creadas: ", recompensasIds);
+        console.log("Categorias creacas: ", categoriasIds);
+
         // Creación de RecompensasCategorias
         await Promise.all(
             recompensasCategorias.map(async (item) => {
