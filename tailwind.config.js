@@ -12,6 +12,7 @@ module.exports = {
     extend: {
       colors: {
         'capitalone': {
+          'blue-deep': '#101D2A',        // Primary Capital One blue
           'blue': '#355E7E',        // Primary Capital One blue
           'blue-light': '#0071C5',   // Secondary blue for accents
           'indigo': '#3274AC',   // Secondary blue for accents

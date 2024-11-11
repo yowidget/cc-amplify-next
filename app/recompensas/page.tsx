@@ -37,6 +37,13 @@ export default function MisRecompensas() {
   const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<PreferenciaDeclarada[]>([]);
   const [selectedRecompensa, setSelectedRecompensa] = useState<Recompensa | null>(null);
 
+  // Estado para mostrar/ocultar el menú de categorías
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+
+  const toggleMenuVisibility = () => {
+    setIsMenuVisible(!isMenuVisible);
+  };
+
   const handleOpenModal = (recompensa: Recompensa) => {
     setSelectedRecompensa(recompensa);
   };
@@ -104,13 +111,14 @@ export default function MisRecompensas() {
     return a.localeCompare(b);
   });
 
-    // Función para hacer scroll a una sección específica
-    const scrollToSection = (sectionId: string) => {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
-    };
+  // Función para hacer scroll a una sección específica
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   // Función para hacer scroll a una categoría específica
   const scrollToCategory = (categoriaNombre: string) => {
     const section = document.getElementById(categoriaNombre);
@@ -118,41 +126,53 @@ export default function MisRecompensas() {
       section.scrollIntoView({ behavior: "smooth" });
     }
   };
-console.log({recompensas});
+
   return (
     <>
+      {/* Botón para mostrar/ocultar el menú de categorías */}
+      <div className="sticky top-0 bg-white py-2 border-b border-gray-300 z-10 flex justify-between items-center px-4">
+        <h2 className="text-xl font-semibold">Recompensas</h2>
+        <button
+          onClick={toggleMenuVisibility}
+          className="text-blue-500 hover:text-blue-700 transition"
+        >
+          {isMenuVisible ? "Ocultar Categorías" : "Mostrar Categorías"}
+        </button>
+      </div>
+
       {/* Barra de Navegación de Categorías */}
-      <nav className="sticky top-0 bg-white py-2 border-b border-gray-300 z-10">
-        <div className="space-x-2 space-y-1  grid-flow-row-dense">
-           {/* Botón para "Recompensas para ti" */}
-           <button
-            onClick={() => scrollToSection("recompensas-para-ti")}
-            className="px-1 py-4 hover:border-b-2 text-capitalone-gray text-sm  transition"
-          >
-            Recompensas para Ti
-          </button>
-          {/* Botones para cada categoría */}
-          {categoriasConRecompensas.map((categoriaNombre) => (
+      {isMenuVisible && (
+        <nav className="sticky top-11 bg-white py-2 border-b border-gray-300 z-10">
+          <div className="flex flex-wrap gap-2 px-4">
+            {/* Botón para "Recompensas para Ti" */}
             <button
-              key={categoriaNombre}
-              onClick={() => scrollToCategory(categoriaNombre)}
-              className="px-1 py-4 hover:border-b-2 border-capitalone-gray text-capitalone-gray text-sm  transition"
+              onClick={() => scrollToSection("recompensas-para-ti")}
+              className="px-3 py-2 bg-gray-200 rounded text-sm font-medium text-blue-600 hover:bg-blue-100 transition"
             >
-              {categoriaNombre}
+              Recompensas para Ti
             </button>
-          ))}
-        </div>
-      </nav>
+            {/* Botones para cada categoría */}
+            {categoriasConRecompensas.map((categoriaNombre) => (
+              <button
+                key={categoriaNombre}
+                onClick={() => scrollToCategory(categoriaNombre)}
+                className="px-3 py-2 bg-gray-200 rounded text-sm font-medium text-blue-600 hover:bg-blue-100 transition"
+              >
+                {categoriaNombre}
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
 
       {/* Sección de Recompensas Filtradas en Grid */}
-      <section id="recompensas-para-ti"  className="seccion-recompensas mt-8">
+      <section id="recompensas-para-ti" className="seccion-recompensas mt-8">
         <h3 className="text-2xl font-semibold mb-4">Recompensas para ti</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {recompensas
             .filter((recompensa) =>
               preferenciasDeclaradas.some(
-                (preferencia) =>
-                  preferencia.categoriaId === recompensa.categoriaId
+                (preferencia) => preferencia.categoriaId === recompensa.categoriaId
               )
             )
             .map((recompensa) => (
@@ -175,15 +195,14 @@ console.log({recompensas});
               <div className="border-b-2 border-gray-300 mb-4 pb-2">
                 <h4 className="text-xl font-bold text-gray-700">{categoriaNombre}</h4>
               </div>
-              {/* Slider horizontal de recompensas de la categoría */}
-              <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+              {/* Grid de recompensas de la categoría */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {recompensasPorCategoria[categoriaNombre].map((recompensa) => (
-                  <div key={recompensa.id} className="min-w-[250px]">
-                    <RecompensaCard
-                      recompensa={recompensa}
-                      onOpenModal={handleOpenModal}
-                    />
-                  </div>
+                  <RecompensaCard
+                    key={recompensa.id}
+                    recompensa={recompensa}
+                    onOpenModal={handleOpenModal}
+                  />
                 ))}
               </div>
             </div>

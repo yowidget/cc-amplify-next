@@ -65,29 +65,31 @@ export default function RecompensasSugeridas() {
       };
       setPreferenciasDeclaradas(preferencias.data);
 
-      const categoriasIds = preferencias.data
-        .map((preferencia) => preferencia.categoriaId)
-        .filter((id): id is string => id !== null);
-      setCategoriasIds(categoriasIds);
+      if (preferencias.data.length > 0) {
+        const categoriasIds = preferencias.data
+          .map((preferencia) => preferencia.categoriaId)
+          .filter((id): id is string => id !== null);
+        setCategoriasIds(categoriasIds);
 
-      const filter = { or: categoriasIds.map((id) => ({ categoriaId: { eq: id } })) };
+        const filter = { or: categoriasIds.map((id) => ({ categoriaId: { eq: id } })) };
 
-      const recompensas = (await client.models.Recompensa.list({
-        filter,
-        selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id", "img"],
-      })) as {
-        data: Array<{
-          id: string;
-          categoriaId: string;
-          nombre: string;
-          img: string;
-          categoria: {
+        const recompensas = (await client.models.Recompensa.list({
+          filter,
+          selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id", "img"],
+        })) as {
+          data: Array<{
+            id: string;
+            categoriaId: string;
             nombre: string;
-          };
-        }>;
-      };
+            img: string;
+            categoria: {
+              nombre: string;
+            };
+          }>;
+        };
 
-      setRecompensas(recompensas.data);
+        setRecompensas(recompensas.data);
+      }
     };
 
     getPreferencias();
@@ -101,23 +103,40 @@ export default function RecompensasSugeridas() {
 
   return (
     <>
-      <section className="seccion-recompensas">
-        <h3 className="text-xl font-bold">Hoy para ti:</h3>
-        <div className="recompensas-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recompensas
-            .filter((recompensa) =>
-              preferenciasDeclaradas.some(
-                (preferencia) => preferencia.categoriaId === recompensa.categoriaId
+      <section className="py-4 text-center">
+        <h3 className="text-3xl mb-4">Venture X te da mucho más</h3>
+        <p className="text-lg mb-4">Disfruta de los beneficios que te da tu tarjeta</p>
+
+        {/* Mostrar invitación si no hay preferencias declaradas */}
+        {preferenciasDeclaradas.length === 0 ? (
+          <div className="bg-gray-100 p-6 rounded-lg shadow-md text-center">
+            <h4 className="text-xl font-semibold mb-2">
+              ¿Quieres descubrir recompensas personalizadas?
+            </h4>
+            <Link href="/preferencias">
+              <button className="mt-4 bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 transition">
+                Establecer preferencias
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className="recompensas-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recompensas
+              .filter((recompensa) =>
+                preferenciasDeclaradas.some(
+                  (preferencia) => preferencia.categoriaId === recompensa.categoriaId
+                )
               )
-            )
-            .map((recompensa) => (
-              <RecompensaCard
-                key={recompensa.id}
-                recompensa={recompensa}
-                onOpenModal={handleOpenModal}
-              />
-            ))}
-        </div>
+              .map((recompensa) => (
+                <RecompensaCard
+                  key={recompensa.id}
+                  recompensa={recompensa}
+                  onOpenModal={handleOpenModal}
+                />
+              ))}
+          </div>
+        )}
+
         <div className="flex justify-end items-end">
           <Link href="/recompensas" className="underline text-blue-600 hover:text-blue-800 my-2">
             Ver Todas Las Recompensas
