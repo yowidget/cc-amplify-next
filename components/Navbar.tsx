@@ -61,6 +61,9 @@ const Navbar: React.FC = () => {
           <Link href="/preferencias" className="hover:text-capitalone-red">
             Preferencias
           </Link>
+          <Link href="/recompensas" className="hover:text-capitalone-red" onClick={handleLinkClick}>
+              Recompensas
+            </Link>
           <button onClick={signOut} className="hover:text-capitalone-red">
             Sign out
           </button>
