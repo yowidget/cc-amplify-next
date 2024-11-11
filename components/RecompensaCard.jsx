@@ -1,3 +1,4 @@
+import "./RecompensaCard.css";
 export const RecompensaCard = ({ recompensa, onOpenModal }) => {
   return (
     <div className="recompensa-card">
@@ -12,7 +13,7 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
       <img
         // src={recompensa.imagen}
         // alt={recompensa.nombre}
-        src="https://images.pexels.com/photos/732548/pexels-photo-732548.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+        src={recompensa.img || "https://via.placeholder.com/150"}
         alt={`imagen de la recompensa ${recompensa.nombre}`}
         className="recompensa-imagen"
       />

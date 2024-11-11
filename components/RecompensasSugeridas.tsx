@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
@@ -8,7 +9,7 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 Amplify.configure(outputs);
-import './RecompensaCard.css'
+
 import { RecompensaCard } from "./RecompensaCard";
 
 const client = generateClient<Schema>();
@@ -16,24 +17,26 @@ const client = generateClient<Schema>();
 export default function RecompensasSugeridas() {
   const [categoriasId, setCategoriasIds] = useState<Array<string>>([]);
   const [recompensas, setRecompensas] = useState<
-  Array<{ 
-    id: string; 
-    categoriaId: string;
-    nombre: string; 
-    categoria: { 
-      nombre: string 
-    } 
-  }>
+    Array<{
+      id: string;
+      categoriaId: string;
+      nombre: string;
+      img: string;
+      categoria: {
+        nombre: string;
+      };
+
+    }>
   >([]);
   const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<
-  Array<{ 
-    id: string; 
-    categoriaId: string;
-    nombre: string; 
-    categoria: { 
-      nombre: string 
-    }  
-  }>
+    Array<{
+      id: string;
+      categoriaId: string;
+      nombre: string;
+      categoria: {
+        nombre: string;
+      };
+    }>
   >([]);
 
   const [selectedRecompensa, setSelectedRecompensa] = useState<any>(null);
@@ -46,21 +49,22 @@ export default function RecompensasSugeridas() {
     setSelectedRecompensa(null);
   };
 
-
   const { user, signOut } = useAuthenticator();
 
   useEffect(() => {
     const getPreferencias = async () => {
-      const preferencias  = await client.models.PreferenciaDeclarada.list({
+      const preferencias = (await client.models.PreferenciaDeclarada.list({
         selectionSet: ["categoria.nombre", "nombre", "categoriaId", "id"],
-      }) as { data: Array<{
-        id: string;
-        categoriaId: string;
-        nombre: string;
-        categoria: {
+      })) as {
+        data: Array<{
+          id: string;
+          categoriaId: string;
           nombre: string;
-        };
-      }> };
+          categoria: {
+            nombre: string;
+          };
+        }>;
+      };
       console.log("preferencias: ", preferencias);
       setPreferenciasDeclaradas(preferencias.data);
       const categoriasIds = preferencias.data
@@ -74,18 +78,22 @@ export default function RecompensasSugeridas() {
       );
       let filter = { or: filterMembers };
       console.log({ filter });
-      const recompensas = await client.models.Recompensa.list({
+      const recompensas = (await client.models.Recompensa.list({
         filter,
         selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id"],
-      }) as { data: Array<{
-        id: string;
-        categoriaId: string;
-        nombre: string;
-        categoria: {
+      })) as {
+        data: Array<{
+          id: string;
+          categoriaId: string;
           nombre: string;
-        };
-      }> };
-      console.log("recompensas: ", recompensas);
+          img: string;
+          categoria: {
+            nombre: string;
+          };
+
+        }>;
+      };
+      
       setRecompensas(recompensas.data);
     };
 
@@ -120,6 +128,11 @@ export default function RecompensasSugeridas() {
                 onOpenModal={handleOpenModal}
               />
             ))}
+        </div>
+        <div className="flex justify-end  items-end">
+          <Link href="/recompensas" className=" underline my-2">
+            Ver Todas Las Recompensas
+          </Link>
         </div>
       </section>
       {selectedRecompensa && (

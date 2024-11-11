@@ -8,7 +8,7 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 Amplify.configure(outputs);
 
-import { RecompensaCard } from "../../src/components/RecompensaCard";
+import { RecompensaCard } from "../../components/RecompensaCard";
 
 const client = generateClient<Schema>();
 
@@ -48,7 +48,7 @@ export default function MisRecompensas() {
   function listRecompensas() {
     try {
       const subscription = client.models.Recompensa.observeQuery({
-        selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id"],
+        selectionSet: ["nombre", "categoriaId", "categoria.nombre", "id", "img"],
       }).subscribe({
         next: (data) => {
           setRecompensas(data.items as Recompensa[]);
@@ -118,7 +118,7 @@ export default function MisRecompensas() {
       section.scrollIntoView({ behavior: "smooth" });
     }
   };
-
+console.log({recompensas});
   return (
     <>
       {/* Barra de Navegación de Categorías */}
@@ -127,7 +127,7 @@ export default function MisRecompensas() {
            {/* Botón para "Recompensas para ti" */}
            <button
             onClick={() => scrollToSection("recompensas-para-ti")}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            className="px-1 py-4 hover:border-b-2 text-capitalone-gray text-sm  transition"
           >
             Recompensas para Ti
           </button>
@@ -136,7 +136,7 @@ export default function MisRecompensas() {
             <button
               key={categoriaNombre}
               onClick={() => scrollToCategory(categoriaNombre)}
-              className="px-1 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
+              className="px-1 py-4 hover:border-b-2 border-capitalone-gray text-capitalone-gray text-sm  transition"
             >
               {categoriaNombre}
             </button>
@@ -168,7 +168,7 @@ export default function MisRecompensas() {
       {/* Sección de Recompensas Todas, Ordenadas y Separadas por Categoría */}
       <section className="seccion-recompensas mt-8">
         <h3 className="text-2xl font-semibold mb-4">Recompensas Todas</h3>
-        <div className="recompensas-list">
+        <div>
           {categoriasConRecompensas.map((categoriaNombre) => (
             <div key={categoriaNombre} id={categoriaNombre} className="mb-8">
               {/* Separador con el nombre de la categoría */}
