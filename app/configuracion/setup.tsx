@@ -3,7 +3,7 @@ import type { Schema } from "@/amplify/data/resource";
 import preferencias from "@/public/seeders/preferencias";
 import categorias from "@/public/seeders/categorias";
 import recompensas from "@/public/seeders/recompensas";
-import recompensasPreferencias from "@/public/seeders/recompensasPreferencias";
+import recompensasCategorias from "@/public/seeders/recompensasCategorias";
 import { uploadData, remove } from "aws-amplify/storage";
 
 const client = generateClient<Schema>();
@@ -63,6 +63,7 @@ export default function Setup() {
 
         console.log("Preferencias creadas: ", preferenciasIds);
 
+        const recompensasIds: { [key: string]: string } = {}
 
         await Promise.all(
             recompensas.map(async (item) => {
@@ -75,6 +76,7 @@ export default function Setup() {
                     }
 
                     console.log("Recompensa creada: ", data);
+                    recompensasIds[item.nombre] = data?.id || "";
 
                     // Obtener la imagen desde la ruta
                     const response = await fetch("img/recompensas/" + item.img);
@@ -111,6 +113,32 @@ export default function Setup() {
 
                 } catch (error) {
                     console.error("Error en la creación o actualización de recompensa: ", error);
+                }
+            })
+        );
+
+        // Creación de RecompensasCategorias
+        await Promise.all(
+            recompensasCategorias.map(async (item) => {
+                const categoriaId = categoriasIds[item.categoriaId] || "";
+                if (!categoriaId) {
+                    console.log(`Categoría no encontrada: ${item.categoriaId}`);
+                    return;
+                }
+                const recompensaId = recompensasIds[item.recompensaId] || "";
+                if (!recompensaId) {
+                    console.log(`Recompensa no encontrada: ${item.recompensaId}`);
+                    return;
+                }
+                try {
+                    const { data, errors } = await client.models.RecompensaCategoria.create({ recompensaId: recompensaId, categoriaId: categoriaId });
+                    if (errors) {
+                        console.log("Error creando relacion RecompensasCategorias: ", errors);
+                    } else {
+                        console.log("Relacion RecompensasCategorias creada: ", data);
+                    }
+                } catch (error) {
+                    console.error("Error en la creación de la relacion RecompensasCategorias: ", error);
                 }
             })
         );
