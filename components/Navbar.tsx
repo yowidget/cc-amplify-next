@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
 
       {/* Menú desplegable para móviles */}
       {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white border-t border-capitalone-blue md:hidden">
+        <div className="absolute top-full left-0 w-full bg-white border-t border-capitalone-blue md:hidden z-20">
           <div className="flex flex-col p-4 space-y-2">
             <Link href="/" className="hover:text-capitalone-red" onClick={handleLinkClick}>
               Inicio
@@ -77,6 +77,10 @@ const Navbar: React.FC = () => {
             <Link href="/preferencias" className="hover:text-capitalone-red" onClick={handleLinkClick}>
               Preferencias
             </Link>
+            <Link href="/recompensas" className="hover:text-capitalone-red" onClick={handleLinkClick}>
+              Recompensas
+            </Link>
+         
             <button onClick={() => { handleLinkClick(); signOut(); }} className="text-left hover:text-capitalone-red">
               Sign out
             </button>

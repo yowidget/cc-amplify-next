@@ -18,12 +18,23 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
       />
       <div className="card-info">
         <span className="beneficio-nombre">{recompensa.nombre}</span>
-        <button
+        {/* <button
           onClick={() => onOpenModal(recompensa)}
           className="detalle-button"
         >
           Ver detalles
+        </button> */}         
+        <button
+          style={{width: "100%", marginBottom:"1rem"}}
+          onClick={() => onOpenModal(recompensa)}
+          className="px-4 py-2 bg-capitalone-red text-white rounded-md hover:bg-capitalone-red-dark">
+          Ver detalles
         </button>
+        <button
+          style={{width: "100%", marginBottom:"1rem"}}
+          className="px-4 py-2 bg-capitalone-blue text-white rounded-md hover:bg-capitalone-blue-light">
+          Solicitar
+        </button> 
       </div>
     </div>
   );

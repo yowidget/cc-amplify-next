@@ -8,70 +8,106 @@ import { uploadData, getUrl } from "aws-amplify/storage";
 
 const client = generateClient<Schema>();
 
-
-
 // Tipos para la recompensa y categoría
 interface Recompensa {
+  id: string;
+  nombre: Nullable<string>;
+  detalles: Nullable<string>;
+  categoria: {
+    nombre: string;
     id: string;
-    nombre: Nullable<string>;
-    detalles: Nullable<string>;
-    categoria: {
-        nombre: string;
-        id: string;
-        createdAt: string;
-        updatedAt: string;
-    };
-    img?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  categoriaId: string;
+  img?: string;
 }
 
 export default function Recompensas() {
-    const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
-    // const [recompensaInput, setRecompensaInput] = useState<string>("");
-    const [categorias, setCategorias] = useState<Array<Schema["Categoria"]["type"]>>([]);
+  const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
+  // const [recompensaInput, setRecompensaInput] = useState<string>("");
+  const [categorias, setCategorias] = useState<
+    Array<Schema["Categoria"]["type"]>
+  >([]);
 
-    //File constants
-    const [file, setFile] = useState<File | null>(null);
-    const [uploading, setUploading] = useState(false);
+  //File constants
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-
-    // Función para listar categorías
-    function listCategorias() {
-        try {
-            const subscription = client.models.Categoria.observeQuery().subscribe({
-                next: (data) => setCategorias([...data.items]),
-            });
-            console.log("Categorías listadas", categorias);
-            return subscription;
-        } catch (e) {
-            console.error("Error al listar las categorías", e);
-        }
+  // Función para listar categorías
+  function listCategorias() {
+    try {
+      const subscription = client.models.Categoria.observeQuery().subscribe({
+        next: (data) => setCategorias([...data.items]),
+      });
+      console.log("Categorías listadas", categorias);
+      return subscription;
+    } catch (e) {
+      console.error("Error al listar las categorías", e);
     }
+  }
 
+  // Función para cargar recompensas
+  function loadRecompensas() {
+    client.models.Recompensa.list({
+      selectionSet: ["id", "nombre", "detalles", "categoria.*", "img"],
+    }).then(({ data, errors }) => {
+      if (errors)
+        throw console.error("Error al obtener las recompensas", errors);
+      console.log("Recompensas", data);
+      setRecompensas(data as Recompensa[]);
+    });
+  }
 
+  // Función para cambiar la categoría de una recompensa
+  function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
+    client.models.Recompensa.update({ id, categoriaId })
+      .then(() => {
+        console.log(
+          `Recompensa ${id} actualizada con la categoría ${categoriaId}`
+        );
+      })
+      .catch((e) =>
+        console.error(`Error al actualizar la recompensa ${id}`, e)
+      );
+  }
 
-    // Función para cargar recompensas
-    function loadRecompensas() {
-        client.models.Recompensa.list({
-            selectionSet: ["id", "nombre", "detalles", "categoria.*", "img"],
-        }).then(({ data, errors }) => {
-            if (errors) throw console.error("Error al obtener las recompensas", errors);
-            setRecompensas(data as Recompensa[]);
+  // Función para eliminar recompensa
+  function handleEliminarRecompensa(id: string) {
+    client.models.Recompensa.delete({ id }).then(() => loadRecompensas());
+  }
+
+  const CreateRecompensa: React.FC = () => {
+    const [recompensaName, setRecompensaName] = useState("");
+    const [recompensaDetails, setRecompensaDetails] = useState("");
+    const [file, setFile] = useState<File | null>(null); // Estado para el archivo
+    const [imagePreview, setImagePreview] = useState<string>("");
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = event.target.files ? event.target.files[0] : null;
+      if (selectedFile) {
+        setFile(selectedFile);
+        setImagePreview(URL.createObjectURL(selectedFile));
+      }
+    };
+
+    async function createRecompensaFromInput() {
+      if (!file) return alert("Debes seleccionar una imagen");
+
+      try {
+        const { data: recompensa } = await client.models.Recompensa.create({
+          nombre: recompensaName,
+          detalles: recompensaDetails,
         });
-    }
 
-    // Función para cambiar la categoría de una recompensa
-    function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
-        client.models.Recompensa.update({ id, categoriaId })
-            .then(() => {
-                console.log(`Recompensa ${id} actualizada con la categoría ${categoriaId}`);
-            })
-            .catch((e) => console.error(`Error al actualizar la recompensa ${id}`, e));
-    }
+        if (recompensa) {
+          console.log(`Recompensa ${recompensa.nombre} creada`);
 
-    // Función para eliminar recompensa
-    function handleEliminarRecompensa(id: string) {
-        client.models.Recompensa.delete({ id }).then(() => loadRecompensas());
-    }
+          const result = await uploadData({
+            path: `images/${recompensa.id}-${file.name}`,
+            data: file,
+            options: { contentType: file.type },
+          }).result;
 
 
     const CreateRecompensa: React.FC = () => {

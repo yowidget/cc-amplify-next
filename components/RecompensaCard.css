@@ -1,0 +1,42 @@
+.recompensas-list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+}
+
+.categoria-item {
+    line-height: 2rem;
+    color: #615f5f;
+}
+
+.card-info span {
+    font-size: 1.2rem;
+    color: rgb(1, 61, 91);
+    text-transform: capitalize;
+    text-align: center;
+    display: block;
+    margin: 1rem;
+}
+
+.like-button {
+    position: absolute;
+    right: 20px;
+    top: 20px;    
+}
+.recompensa-card {
+    position: relative;
+    border: 1px solid silver;
+    border-radius: 5px;
+    background-color: white;
+    padding: 1rem;
+    margin: 1rem 0;
+    margin-right: 1rem;
+    min-width: 250px;
+    max-width: 250px;
+    box-shadow: 1px -2px 5px 3px #dad6d6;
+}
+
+.recompensa-card img {
+    width: 80%;
+    margin: 2rem auto;
+}
