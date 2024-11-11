@@ -220,9 +220,11 @@ export default function Recompensas() {
         const [url, setURL] = useState<string>("");
 
         useEffect(() => {
+            if (!recompensa.img) return;
             getUrl({ path: recompensa.img || "" }).then((result) => {
                 setURL(result?.url?.href || "");
-                // console.log("URL de la imagen: ", result?.url?.href);
+            }).catch((error) => {
+                console.error("Error al obtener la URL de la imagen", error);
             });
         }, [recompensa.img]);
 

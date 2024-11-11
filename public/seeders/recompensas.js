@@ -11,7 +11,7 @@ export default [
     { nombre: "Descuento en transporte de CDMX", img: "descuento_transporte_cdmx.png" },
     { nombre: "Meses sin intereses en viajes", img: "msi_viajes.png" },
     { nombre: "15% de descuento en moda", img: "15desc_moda.png" },
-    { nombre: "10% de descuento en Liverpool", img: "10desc_liverpool.png" },
+    { nombre: "30% de descuento en Liverpool", img: "30desc_liverpool.png" },
     { nombre: "Envío gratis en Amazon", img: "envio_gratis_amazon.png" },
     { nombre: "2x1 en cervezas", img: "2x1_cervezas.png" },
     { nombre: "Cupón en comida rápida", img: "cupon_comida.png" },
