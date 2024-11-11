@@ -12,7 +12,6 @@ export default function Recompensas() {
         {
             id: string;
             nombre: Nullable<string>;
-            categoria: { nombre: string; id: string; createdAt: string; updatedAt: string; }
         }[]
     >([]);
     const [recompensaInput, setRecompensaInput] = useState<string>("");
@@ -80,7 +79,7 @@ export default function Recompensas() {
                     if (Array.isArray(newCategorizedTransacciones)) {
                         newCategorizedTransacciones
                             .map(({ text, category }) =>
-                                client.models.Recompensa.create({ nombre: text, categoriaId: category }).then(({ data, errors }) => {
+                                client.models.Recompensa.create({ nombre: text }).then(({ data, errors }) => {
                                     if (errors) throw console.error("Error al crear la recompensa", errors);
                                     console.log("Recompensa creada", data);
                                 })
@@ -107,7 +106,7 @@ export default function Recompensas() {
 
     function loadRecompensas() {
         client.models.Recompensa.list(
-            { selectionSet: ['id', 'nombre', 'categoria.*'] }
+            { selectionSet: ['id', 'nombre'] }
         ).then(({ data, errors }) => {
             if (errors) throw console.error("Error al obtener las recompensas", errors);
             console.log(data);
@@ -119,8 +118,7 @@ export default function Recompensas() {
         console.log(`Actualizando recompensa ${id} con la categoría ${categoriaId}`);
 
         client.models.Recompensa.update({
-            id,
-            categoriaId,
+            id
         })
             .then(() => {
                 console.log(
@@ -165,7 +163,7 @@ export default function Recompensas() {
                     <li key={recompensa.id}>
                         {recompensa.nombre}
                         <div>
-                            <select
+                            {/* <select
                                 id={`categoriaSelect-${recompensa.id}`}
                                 value={recompensa.categoria.id ?? ""}
                                 onChange={(e) =>
@@ -184,7 +182,7 @@ export default function Recompensas() {
                                         {categoria.nombre}
                                     </option>
                                 ))}
-                            </select>
+                            </select> */}
                         </div>
                         <button onClick={() => handleElminiarRecompensa(recompensa.id)}>Eliminar recompensa</button>
                     </li>

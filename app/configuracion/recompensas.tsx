@@ -235,6 +235,31 @@ export default function Recompensas() {
       }
     }
 
+    async function Analize (text: string) {
+      const { data: categorias, errors } = await client.models.Categoria.list({
+        selectionSet: ["id", "nombre"],
+      });
+      if (errors) {
+        console.error("Error al obtener las categorías", errors);
+      }
+      const { data: preferencias, errors: preferenciasErrors } = await client.models.Preferencia.list({
+        selectionSet: ["id", "nombre", "categoriaId"],
+      });
+      if (preferenciasErrors) {
+        console.error("Error al obtener las preferencias", preferenciasErrors);
+      }
+      const prompt = `categorias:${categorias},preferencias:${preferencias},texto:${text}`;
+
+      const { data, errors: analizeErrors } = await client.queries.recompensaAnalizer({
+        prompt,
+      });
+      if (analizeErrors) {
+        console.error("Error al analizar la recompensa", analizeErrors);
+      }
+      console.log("Respuesta del modelo: ",data);
+
+    }
+
     return (
       <div className="p-6 bg-white shadow-md rounded-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Agregar Recompensas</h2>
