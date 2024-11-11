@@ -4,6 +4,7 @@ import preferencias from "@/public/seeders/preferencias";
 import categorias from "@/public/seeders/categorias";
 import recompensas from "@/public/seeders/recompensas";
 import recompensasPreferencias from "@/public/seeders/recompensasPreferencias";
+import { uploadData } from "aws-amplify/storage";
 
 const client = generateClient<Schema>();
 
@@ -14,34 +15,58 @@ export default function Setup() {
         console.log("Ejecutando seeders...");
 
         const categoriasIds: { [key: string]: string } = {}
-
-        categorias.map((item) => {
-            client.models.Categoria.create({ nombre: item.nombre }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando categoria: ", errors);
-                console.log("Categoria creada: ", data);
-                categoriasIds[item.nombre] = data?.id || "";
-            });
-        })
+        Promise.all(
+            categorias.map((item) => {
+                client.models.Categoria.create({ nombre: item.nombre }).then(({ data, errors }) => {
+                    if (errors) console.log("Error creando categoria: ", errors);
+                    console.log("Categoria creada: ", data);
+                    categoriasIds[item.nombre] = data?.id || "";
+                });
+            })
+        )
 
         const preferenciasIds: { [key: string]: string } = {}
 
-        preferencias.map((item) => {
+        Promise.all(
+            preferencias.map((item) => {
 
-            const categoriaId = categoriasIds[item.categoriaId] || "";
+                const categoriaId = categoriasIds[item.categoriaId] || "";
 
-            client.models.Preferencia.create({ nombre: item.nombre, categoriaId: categoriaId }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando preferencia: ", errors);
-                console.log("Preferencia creada: ", data);
-                preferenciasIds[item.nombre] = data?.id || "";
-            });
-        })
+                client.models.Preferencia.create({ nombre: item.nombre, categoriaId: categoriaId }).then(({ data, errors }) => {
+                    if (errors) console.log("Error creando preferencia: ", errors);
+                    console.log("Preferencia creada: ", data);
+                    preferenciasIds[item.nombre] = data?.id || "";
+                });
+            })
+        )
 
-        recompensas.map((item) => {
-            client.models.Recompensa.create({ nombre: item.nombre }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando recompensa: ", errors);
-                console.log("Recompensa creada: ", data);
-            });
-        })
+        Promise.all(
+            recompensas.map((item) => {
+
+                client.models.Recompensa.create({ nombre: item.nombre }).then(async ({ data, errors }) => {
+                    if (errors) console.log("Error creando recompensa: ", errors);
+
+                    const response = await fetch("@/public/img/recompensas/" + item.img);
+                    const blob = await response.blob();
+                    const file = new File([blob], item.img, { type: "image/png" });
+                    const result = await uploadData({
+                        path: `images/${data?.id || ""}-${file.name}`,
+                        data: file,
+                        options: {
+                            contentType: "image/png",
+                        },
+                    }).result;
+
+                    const updateResponse = await client.models.Recompensa.update({
+                        id: data?.id || "",
+                        img: result?.path,
+                    });
+
+                    console.log("Recompensa creada: ", updateResponse);
+
+                });
+            })
+        )
 
         // recompensasPreferencias.map((item) => {
         //     client.models.RecompensaPreferencia.create({ id: item.id, preferenciaId: item.preferenciaId, recompensaId: item.recompensaId }).then(({ data, errors }) => {
@@ -56,7 +81,7 @@ export default function Setup() {
 
     }
 
-    
+
 
     async function clearDatabase() {
         try {

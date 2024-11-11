@@ -141,8 +141,6 @@ export default function Configuracion() {
     try {
       const subscription = client.models.Categoria.observeQuery().subscribe({
         next: (data) => {
-
-          console.log("Categorias", [...data.items]);
           setCategorias([...data.items])
         },
       });
