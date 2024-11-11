@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
@@ -161,7 +161,7 @@ export default function MisRecompensas() {
   return (
     <>
       <div className="sticky top-0 bg-white py-2 border-b border-gray-300 z-10 flex justify-between items-center px-4">
-        <h2 className="text-xl font-semibold">Recompensas</h2>
+        <h2 className="text-m">Recompensas</h2>
         <button
           onClick={toggleMenuVisibility}
           className="text-blue-500 hover:text-blue-700 transition"
@@ -193,23 +193,34 @@ export default function MisRecompensas() {
       )}
 
       <section id="recompensas-para-ti" className="seccion-recompensas mt-8">
-        <h3 className="text-2xl font-semibold mb-4">Recompensas para ti</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {recompensasSugeridas
-            .map((recompensa) => (
+        <h3 className="mb-4">Recompensas para ti</h3>
+          {recompensasSugeridas.length > 0 ? (
+            recompensasSugeridas.map((recompensa) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+
               <RecompensaCard
                 key={recompensa.id}
                 recompensa={recompensa}
                 onOpenModal={handleOpenModal}
               />
-            ))}
         </div>
+
+            ))
+          ) : (
+            <div className="bg-gray-100 p-6 rounded-lg shadow-md text-center">
+            <h4 className="mb-2">
+              Por el momento no hay recompensas para mostrar.
+            </h4>
+          </div>
+          )}
       </section>
 
       <section className="seccion-recompensas mt-8">
-        <h3 className="text-2xl font-semibold mb-4">Recompensas Todas</h3>
+        <h3 className="mb-4">Recompensas Todas</h3>
         <div>
-          {categoriasConRecompensas.map((categoriaNombre) => (
+          {
+          categoriasConRecompensas.length > 0 ? (
+          categoriasConRecompensas.map((categoriaNombre) => (
             <div key={categoriaNombre} id={categoriaNombre} className="mb-8">
               <div className="border-b-2 border-gray-300 mb-4 pb-2">
                 <h4 className="text-xl font-bold text-gray-700">{categoriaNombre}</h4>
@@ -224,7 +235,15 @@ export default function MisRecompensas() {
                 ))}
               </div>
             </div>
-          ))}
+          ))): 
+          (
+            <div className="bg-gray-100 p-6 rounded-lg shadow-md text-center">
+              <h4 className="mb-2">
+                Por el momento no hay recompensas para mostrar.
+              </h4>
+          </div>            
+          )
+        }
         </div>
       </section>
 
