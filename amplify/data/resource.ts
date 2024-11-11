@@ -5,6 +5,7 @@ import {
   defineFunction,
 } from "@aws-amplify/backend";
 import { sendEmailRecompensa } from "../functions/sendEmailRecompensa/resource";
+import { recompensaAnalizer } from "../functions/recompensaAnalizer/resource";
 
 export const MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0";
 
@@ -59,7 +60,6 @@ const schema = a
           "PreferenciaDeclarada",
           "categoriaId"
         ),
-        recompensas: a.hasMany("Recompensa", "categoriaId"),
         transacciones: a.hasMany("Transaccion", "categoriaId"),
         recompensaCategorias: a.hasMany("RecompensaCategoria", "categoriaId"),
       })
@@ -127,6 +127,14 @@ const schema = a
       .returns(a.json().required())
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(categorizeFunction)),
+
+
+    recompensaAnalizer: a
+      .query()
+      .arguments({ prompt: a.string().required() })
+      .returns(a.json().required())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(recompensaAnalizer)),
   })
   .authorization((allow) => [
     allow.resource(sendEmailRecompensa).to(["query"]),

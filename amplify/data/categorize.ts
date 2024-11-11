@@ -82,7 +82,10 @@ Limitate a no contestar nada mas de lo que se te pide, y asegurate de que cada t
 
   const data = JSON.parse(Buffer.from(response.body).toString());
 
-  return response
+  const finalData = JSON.parse(`${data.content[0].text}`);
+
+  if (typeof data.content === "object") return finalData;
+  throw error ("La respuesta del modelo no fue en el formato establecido: Array<object>");
 
   // const finalData = JSON.parse(`${data.content[0].text}`);
 

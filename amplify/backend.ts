@@ -13,6 +13,7 @@ import {
 // Functions
 import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 import { sendEmailRecompensa } from "./functions/sendEmailRecompensa/resource";
+import { recompensaAnalizer } from "./functions/recompensaAnalizer/resource";
 import { data, MODEL_ID, categorizeFunction } from "./data/resource.js";
 
 //DynamoDbStream
@@ -28,6 +29,7 @@ const backend = defineBackend({
   myDynamoDBFunction,
   sendEmailRecompensa,
   categorizeFunction,
+  recompensaAnalizer
 });
 
 backend.sendEmailRecompensa.resources.lambda.addToRolePolicy(
@@ -51,6 +53,15 @@ backend.categorizeFunction.resources.lambda.addToRolePolicy(
     resources: [`arn:aws:bedrock:*::foundation-model/${MODEL_ID}`],
   })
 );
+
+backend.recompensaAnalizer.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["bedrock:InvokeModel"],
+    resources: [`arn:aws:bedrock:*::foundation-model/${MODEL_ID}`],
+  })
+);
+
 const ebSchedulerDS = backend.data.addHttpDataSource(
   // name of the data source that needs to be passed to my amplify/data/resource.ts file
   "ebSchedulerDS",
