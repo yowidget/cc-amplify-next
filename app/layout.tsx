@@ -5,11 +5,9 @@ import { ReactNode } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-import { Inter } from "next/font/google";
 import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
