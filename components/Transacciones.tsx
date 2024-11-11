@@ -53,7 +53,7 @@ export default function Transacciones({
       .split(",")
       .map((item) => transaccionesArray.push(item))
       .filter(Boolean);
-
+    console.log("transaccion", { transaccionesArray });
     client.queries
       .categorize({ prompt: transaccionesArray })
       .then(
@@ -64,6 +64,7 @@ export default function Transacciones({
           data: any;
           errors: any;
         }) => {
+          console.log("respuesta modelo:", { categorizedTransacciones });
           if (errors)
             throw console.error(
               "Error al categorizar las transacciones",
@@ -74,30 +75,43 @@ export default function Transacciones({
             const newCategorizedTransacciones = JSON.parse(
               categorizedTransacciones
             );
+            console.log("categorizado:", { newCategorizedTransacciones });
             if (Array.isArray(newCategorizedTransacciones)) {
               newCategorizedTransacciones.map(({ text, category }) => {
-                const deliverDate =
-                  Date.now() + 1 * 60 * 1000 - 6 * 60 * 60 * 1000;
-                const deliverDateISO = new Date(deliverDate)
-                  .toISOString()
-                  .substring(0, 19);
-                console.log({ deliverDateISO });
-                client.mutations
-                  .createTransaccionSchedule({
-                    concepto: text,
-                    categoriaId: category,
-                    deliverDate: deliverDateISO,
-                    userTimeZone,
-                    email: user?.signInDetails?.loginId || "",
-                  })
-                  .then(({ data, errors }: { data: any; errors: any }) => {
-                    if (errors)
-                      throw console.error(
-                        "Error al crear la transacción",
-                        errors
-                      );
-                    console.log("Transacción creada", data);
-                  });
+                client.models.Categoria.list({
+                  filter: { nombre: { eq: category } },
+                }).then(({ data, errors }: { data: any; errors: any }) => {
+                  if (errors)
+                    throw console.error(
+                      "Error al obtener la categoría",
+                      errors
+                    );
+                  const categoryBuena = data[0].id;
+                  console.log({ category });
+
+                  const deliverDate =
+                    Date.now() + 1 * 60 * 1000 - 6 * 60 * 60 * 1000;
+                  const deliverDateISO = new Date(deliverDate)
+                    .toISOString()
+                    .substring(0, 19);
+                  console.log({ deliverDateISO });
+                  client.mutations
+                    .createTransaccionSchedule({
+                      concepto: text,
+                      categoriaId: categoryBuena,
+                      deliverDate: deliverDateISO,
+                      userTimeZone,
+                      email: user?.signInDetails?.loginId || "",
+                    })
+                    .then(({ data, errors }: { data: any; errors: any }) => {
+                      if (errors)
+                        throw console.error(
+                          "Error al crear la transacción",
+                          errors
+                        );
+                      console.log("Transacción creada", data);
+                    });
+                });
               });
             }
           }
@@ -115,12 +129,11 @@ export default function Transacciones({
   return (
     <div>
       <section className="bg-capitalone-blue text-white p-6 gap-2 flex flex-col items-center justify-center">
-        <h2>
-         Usar tu tarjeta te brinda muchas recompensas.
-        </h2>
+        <h2>Usar tu tarjeta te brinda muchas recompensas.</h2>
 
         <p>
-        Registra los conceptos de tus compras, viajes, vuelos, etc. y recibe recomendaciones personalizadas de recompensas.
+          Registra los conceptos de tus compras, viajes, vuelos, etc. y recibe
+          recomendaciones personalizadas de recompensas.
         </p>
       </section>
       <section>

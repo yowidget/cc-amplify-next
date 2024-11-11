@@ -27,26 +27,26 @@ export const handler: Schema["categorize"]["functionHandler"] = async (
         `
 Necesito que me ayudes a clasificar los textos del array de textos que se te proporcionará a tu criterio y base de conocimientos.
 Las posibles categorías son: 
-alimentacion_y_bebidas
-delivery_de_comida
-ropa_y_accesorios
-electronica_y_tecnologia
-hogar_y_jardin
-salud_y_belleza
-transporte
-entretenimiento_y_ocio
-vuelos
-hoteleria
-servicios_financieros
-seguros
-educacion
-suscripciones
-donaciones_y_caridad
-impuestos_y_tarifas
-inversiones
-servicios_publicos
-cuotas_membresias
-transacciones_no_relevantes
+Alimentación y Bebidas
+Delivery de Comida
+Ropa y Accesorios
+Electrónica y Tecnología
+Hogar y Jardín
+Salud y Belleza
+Transporte
+Entretenimiento y Ocio
+Vuelos
+Hoteleria
+Servicios Financieros
+Seguros
+Educación
+Suscripciones
+Donaciones y Caridad
+Impuestos y Tarifas
+Inversiones
+Servicios Públicos
+Cuotas o Membresías
+Transacciones No Relevantes
 
 Clasifica los textos y entregame la relacion de cada texto con su categoria en un array de objetos JSON. Cada objeto debe tener la siguiente estructura:
 {
