@@ -24,16 +24,37 @@ export const handler: Schema["recompensaAnalizer"]["functionHandler"] = async (
     body: JSON.stringify({
       anthropic_version: "bedrock-2023-05-31",
       system:
-        `Eres un clasificador de recompensas, asi como tambien analizas que palabras tienen una relacion directa con la recompensa clasificada.
-        Se te dará una lista de categorias ([{id: string, nombre: string},...]), una lista de preferencias ([{id: string, nombre: string, categoriaId: string},...]) y un texto que representa una recompensa.
-        Usaras de auxiliares dos arreglos de texto vacios, uno de categorias que llamaremos categorias-output y otro de preferencias que llamaremos preferencias-output, ambos son de la forma: ["", "",...].
-        La respuesta debe de ser un objeto con la siguiente estructura:
-        {categorias: categorias-output, preferencias: preferencias-output}
-        No contestes mas de lo que se te pide, asegurate de que lo unico en la respuesta sea el objeto mencionado.
-        Primero identifica 1 o 2 categorias que tengan relacion con el texto, si el texto no tiene relacion con ninguna categoria, o no identificas el contenido del texto, agrega el id de categoria cuyo nombre es "Transacciones No Relevantes" al arreglo de categorias-output y responde con el arreglo de categorias-output con el unico registro y el arreglo de preferencias-output vacio.
-        En caso contrario, si identificas una o dos categorias, agrega al arreglo de categorias-output los id's de las categorias identificadas. 
-        Despues identifica las preferencias (cuyo valor categoriaId sea igual a algun id de la/las categorias relacionadas) que tengan relacion con el texto, agrea los identificadores de las preferencias identificadas al arreglo de preferencias-output, si no identificas ninguna preferencia, no agregues nada al arreglo de preferencias-output.
-        Asegurate de que las preferencias identificadas tengan relacion con las categorias identificadas mediante el campo categoriaId de las preferencias.
+        `Eres un clasificador de recompensas y analizarás qué palabras en el texto están directamente relacionadas con la recompensa asignada.
+
+Te proporcionaremos:
+categorías: [{id: string, nombre: string}, ...],
+preferencias: [{id: string, nombre: string, categoriaId: string}, ...],
+texto: string
+Algoritmo para Clasificar Recompensas:
+
+Inicialización de Arreglos de Salida:
+
+Crea dos arreglos vacíos: categorias-output y preferencias-output.
+categorias-output: almacena los IDs de categorías identificadas.
+preferencias-output: almacena objetos en el formato { preferenciaId: "", categoriaId: "" } para cada preferencia identificada.
+Identificación de Categorías:
+
+Recorre cada categoria de la lista de categorías:
+Si identificas que categoria.nombre tiene relación con el texto, agrega categoria.id al arreglo categorias-output.
+Limita la identificación a un máximo de 1 o 2 categorías.
+Si no se identifica ninguna categoría que tenga relación con el texto:
+Agrega al arreglo categorias-output el id de la categoría cuyo nombre es "Transacciones No Relevantes".
+
+Identificación de Preferencias (solo si categorias-output contiene al menos un ID de categoría distinto al id de la categoria con nombre "Transacciones No Relevantes"):
+Recorre cada preferencia en la lista de preferencias:
+Si preferencia.categoriaId coincide con alguno de los IDs en categorias-output y preferencia.nombre tiene relación con el texto:
+Agrega un objeto { preferenciaId: preferencia.id, categoriaId: preferencia.categoriaId } al arreglo preferencias-output.
+Limitate a identificar un máximo de 1 o 2 preferencias por categoría.
+
+Respuesta Final:
+
+La respuesta debe ser un objeto, donde los arreglos solo contienen los IDs identificados, limitate a contestar unicamente el objeto de respuesta en el siguiente formato (no incluyas ninguna palabra adicional):
+{ categorias: categorias-output, preferencias: preferencias-output }
           `,
       messages: [
         {
@@ -46,7 +67,7 @@ export const handler: Schema["recompensaAnalizer"]["functionHandler"] = async (
           ],
         },
       ],
-      max_tokens: 3000,
+      max_tokens: 10000,
       temperature: 0.5,
     }),
   } as InvokeModelCommandInput;

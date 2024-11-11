@@ -248,19 +248,43 @@ export default function Recompensas() {
       if (preferenciasErrors) {
         console.error("Error al obtener las preferencias", preferenciasErrors);
       }
-      const prompt = `categorias:${categorias},preferencias:${preferencias},texto:${text}`;
-
+      const prompt = `categorias:${JSON.stringify(categorias)},preferencias:${JSON.stringify(preferencias)},texto:"${text}"`;
+      // console.log("Prompt", prompt);
       const { data, errors: analizeErrors } = await client.queries.recompensaAnalizer({
         prompt,
       });
       if (analizeErrors) {
         console.error("Error al analizar la recompensa", analizeErrors);
       }
-
+      // console.log("Resultado del modelo", data);
       if (data && typeof data === "string") {
         const jsonData = JSON.parse(JSON.parse(data).content[0].text);
         console.log("Resultado del modelo", jsonData);
-      }else{
+        const { categorias, preferencias }: { categorias: string[], preferencias: { preferenciaId: string, categoriaId: string }[] } = jsonData;
+        if (errors) {
+          console.error("Error al crear la categoría", errors);
+        }
+
+        setSelectedCategories([]);
+        setSelectedPreferences({});
+
+        categorias.map((categoriaId: string) => {
+          handleCategorySelect(categoriaId)
+        })
+        preferencias.map(({ preferenciaId, categoriaId }) => {
+          handlePreferenceSelect(categoriaId, preferenciaId)
+        })
+
+
+
+        // const recompensaId = createRecompensaResponse?.id;
+        // categorias.map((categoriaId: string) => {
+        //   client.models.RecompensaCategoria.create({ recompensaId: recompensaId, categoriaId: categoriaId })
+        // })
+        // preferencias.map((preferenciaId: string) => {
+        //   client.models.RecompensaPreferencia.create({ recompensaId: recompensaId, preferenciaId: preferenciaId })
+        // })
+      } else {
         console.log("Error al analizar la recompensa, no se obtuvo un resultado valido del modelo");
       }
 
@@ -312,11 +336,13 @@ export default function Recompensas() {
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           >
             <option value="">Seleccionar Categoría</option>
-            {categories.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nombre}
-              </option>
-            ))}
+            {categories
+              .filter((categoria) => !selectedCategories.includes(categoria.id)) // Filtra categorías ya seleccionadas
+              .map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nombre}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -340,7 +366,11 @@ export default function Recompensas() {
                 >
                   <option value="">Seleccionar Preferencia</option>
                   {preferences
-                    .filter((preference) => preference.categoriaId === categoryId)
+                    .filter(
+                      (preference) =>
+                        preference.categoriaId === categoryId &&
+                        !selectedPreferences[categoryId]?.includes(preference.id) // Filtra preferencias ya seleccionadas
+                    )
                     .map((preference) => (
                       <option key={preference.id} value={preference.id}>
                         {preference.nombre}
