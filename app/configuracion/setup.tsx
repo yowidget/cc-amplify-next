@@ -5,7 +5,6 @@ import categorias from "@/public/seeders/categorias";
 import recompensas from "@/public/seeders/recompensas";
 import recompensasPreferencias from "@/public/seeders/recompensasPreferencias";
 
-
 const client = generateClient<Schema>();
 
 export default function Setup() {
@@ -14,22 +13,31 @@ export default function Setup() {
 
         console.log("Ejecutando seeders...");
 
+        const categoriasIds: { [key: string]: string } = {}
+
         categorias.map((item) => {
-            client.models.Categoria.create({ id: item.id, nombre: item.nombre }).then(({ data, errors }) => {
+            client.models.Categoria.create({ nombre: item.nombre }).then(({ data, errors }) => {
                 if (errors) console.log("Error creando categoria: ", errors);
                 console.log("Categoria creada: ", data);
+                categoriasIds[item.nombre] = data?.id || "";
             });
         })
 
+        const preferenciasIds: { [key: string]: string } = {}
+
         preferencias.map((item) => {
-            client.models.Preferencia.create({ id: item.id, nombre: item.nombre, categoriaId: item.categoriaId }).then(({ data, errors }) => {
+
+            const categoriaId = categoriasIds[item.categoriaId] || "";
+
+            client.models.Preferencia.create({ nombre: item.nombre, categoriaId: categoriaId }).then(({ data, errors }) => {
                 if (errors) console.log("Error creando preferencia: ", errors);
                 console.log("Preferencia creada: ", data);
+                preferenciasIds[item.nombre] = data?.id || "";
             });
         })
 
         recompensas.map((item) => {
-            client.models.Recompensa.create({ id: item.id, nombre: item.nombre }).then(({ data, errors }) => {
+            client.models.Recompensa.create({ nombre: item.nombre }).then(({ data, errors }) => {
                 if (errors) console.log("Error creando recompensa: ", errors);
                 console.log("Recompensa creada: ", data);
             });
