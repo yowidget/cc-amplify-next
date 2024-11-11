@@ -85,52 +85,6 @@ export default function Configuracion() {
         });
     }
 
-    async function createCategoriasFromInput() {
-        const categoriasArray = categoriaInput
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
-
-        try {
-            await Promise.all(
-                categoriasArray.map((nombre) =>
-                    client.models.Categoria.create({ nombre })
-                )
-            );
-            setCategoriaInput("");
-        } catch (e) {
-            console.error("Error al crear las categorías", e);
-        }
-    }
-
-    async function createPreferenciasFromInput() {
-        if (!selectedCategoriaId) {
-            alert(
-                "Por favor selecciona una categoría antes de agregar preferencias."
-            );
-            return;
-        }
-
-        const preferenciasArray = preferenciaInput
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
-
-        try {
-            await Promise.all(
-                preferenciasArray.map((nombre) =>
-                    client.models.Preferencia.create({
-                        nombre,
-                        categoriaId: selectedCategoriaId,
-                    })
-                )
-            );
-            setPreferenciaInput("");
-        } catch (e) {
-            console.error("Error al crear las preferencias", e);
-        }
-    }
-
     function listCategorias() {
         try {
             const subscription = client.models.Categoria.observeQuery().subscribe({

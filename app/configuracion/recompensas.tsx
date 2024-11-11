@@ -50,7 +50,7 @@ export default function Recompensas() {
     //   setRecompensas(data as Recompensa[]);
     // });
 
-    async function getRecompensas(): Promise<Recompensa[]>{
+    async function getRecompensas(): Promise<Recompensa[]> {
       const { data, errors } = await client.models.Recompensa.list({
         selectionSet: ["id", "nombre", "detalles", "img"],
       });
@@ -95,7 +95,7 @@ export default function Recompensas() {
           return { ...categoriaData[0], preferencias: preferencias };
 
         }));
-        return { ...{id: recompensa.id, nombre: recompensa.nombre, detalles: recompensa.detalles, img: recompensa.img || ""}, categorias };
+        return { ...{ id: recompensa.id, nombre: recompensa.nombre, detalles: recompensa.detalles, img: recompensa.img || "" }, categorias };
       }));
       return recompensas;
     }
@@ -235,7 +235,7 @@ export default function Recompensas() {
       }
     }
 
-    async function Analize (text: string) {
+    async function handleIAAnalizer(text: string) {
       const { data: categorias, errors } = await client.models.Categoria.list({
         selectionSet: ["id", "nombre"],
       });
@@ -256,20 +256,35 @@ export default function Recompensas() {
       if (analizeErrors) {
         console.error("Error al analizar la recompensa", analizeErrors);
       }
-      console.log("Respuesta del modelo: ",data);
+
+      if (data && typeof data === "string") {
+        const jsonData = JSON.parse(JSON.parse(data).content[0].text);
+        console.log("Resultado del modelo", jsonData);
+      }else{
+        console.log("Error al analizar la recompensa, no se obtuvo un resultado valido del modelo");
+      }
 
     }
 
     return (
       <div className="p-6 bg-white shadow-md rounded-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Agregar Recompensas</h2>
-        <input
-          type="text"
-          value={recompensaName}
-          onChange={(e) => setRecompensaName(e.target.value)}
-          placeholder="Nombre de la recompensa"
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-        />
+        <div className="flex items-center space-x-2 mb-4">
+          <input
+            type="text"
+            value={recompensaName}
+            onChange={(e) => setRecompensaName(e.target.value)}
+            placeholder="Nombre de la recompensa"
+            className="flex-grow p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          />
+          <button
+            onClick={() => handleIAAnalizer(recompensaName)} // Define la función handleIAAnalizer para manejar el botón
+            className="py-2 px-4 text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors duration-200"
+          >
+            IA Analyser
+          </button>
+        </div>
+
         <textarea
           placeholder="Ingresa los detalles de la recompensa"
           value={recompensaDetails}
