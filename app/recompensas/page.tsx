@@ -104,6 +104,13 @@ export default function MisRecompensas() {
     return a.localeCompare(b);
   });
 
+    // Función para hacer scroll a una sección específica
+    const scrollToSection = (sectionId: string) => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    };
   // Función para hacer scroll a una categoría específica
   const scrollToCategory = (categoriaNombre: string) => {
     const section = document.getElementById(categoriaNombre);
@@ -116,12 +123,20 @@ export default function MisRecompensas() {
     <>
       {/* Barra de Navegación de Categorías */}
       <nav className="sticky top-0 bg-white py-2 border-b border-gray-300 z-10">
-        <div className="flex space-x-4 overflow-x-auto px-4">
+        <div className="space-x-2 space-y-1  grid-flow-row-dense">
+           {/* Botón para "Recompensas para ti" */}
+           <button
+            onClick={() => scrollToSection("recompensas-para-ti")}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            Recompensas para Ti
+          </button>
+          {/* Botones para cada categoría */}
           {categoriasConRecompensas.map((categoriaNombre) => (
             <button
               key={categoriaNombre}
               onClick={() => scrollToCategory(categoriaNombre)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+              className="px-1 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
             >
               {categoriaNombre}
             </button>
@@ -130,9 +145,9 @@ export default function MisRecompensas() {
       </nav>
 
       {/* Sección de Recompensas Filtradas en Grid */}
-      <section className="seccion-recompensas mt-8">
+      <section id="recompensas-para-ti"  className="seccion-recompensas mt-8">
         <h3 className="text-2xl font-semibold mb-4">Recompensas para ti</h3>
-        <div className="grid grid-cols-1 grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {recompensas
             .filter((recompensa) =>
               preferenciasDeclaradas.some(
