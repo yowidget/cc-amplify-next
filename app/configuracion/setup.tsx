@@ -4,6 +4,7 @@ import preferencias from "@/public/seeders/preferencias";
 import categorias from "@/public/seeders/categorias";
 import recompensas from "@/public/seeders/recompensas";
 import recompensasPreferencias from "@/public/seeders/recompensasPreferencias";
+import { uploadData, remove } from "aws-amplify/storage";
 
 const client = generateClient<Schema>();
 
@@ -13,50 +14,127 @@ export default function Setup() {
 
         console.log("Ejecutando seeders...");
 
+        // Objeto para almacenar los IDs de categorías creadas
         const categoriasIds: { [key: string]: string } = {}
 
-        categorias.map((item) => {
-            client.models.Categoria.create({ nombre: item.nombre }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando categoria: ", errors);
-                console.log("Categoria creada: ", data);
-                categoriasIds[item.nombre] = data?.id || "";
-            });
-        })
+        // Creación de categorías
+        await Promise.all(
+            categorias.map(async (item) => {
+                try {
+                    const { data, errors } = await client.models.Categoria.create({ nombre: item.nombre });
+                    if (errors) {
+                        console.log("Error creando categoria: ", errors);
+                    } else {
+                        console.log("Categoria creada: ", data);
+                        categoriasIds[item.nombre] = data?.id || "";
+                    }
+                } catch (error) {
+                    console.error("Error en la creación de categoria: ", error);
+                }
+            })
+        );
 
+        console.log("categoriasIds: ", categoriasIds);
+
+        // Objeto para almacenar los IDs de preferencias creadas
         const preferenciasIds: { [key: string]: string } = {}
 
-        preferencias.map((item) => {
+        // Creación de preferencias
+        await Promise.all(
+            preferencias.map(async (item) => {
+                const categoriaId = categoriasIds[item.categoriaId] || "";
+                if (!categoriaId) {
+                    console.log(`Categoría no encontrada para la preferencia: ${item.nombre}`);
+                    return;
+                }
+                try {
+                    const { data, errors } = await client.models.Preferencia.create({ nombre: item.nombre, categoriaId: categoriaId });
+                    if (errors) {
+                        console.log("Error creando preferencia: ", errors);
+                    } else {
+                        console.log("Preferencia creada: ", data);
+                        preferenciasIds[item.nombre] = data?.id || "";
+                    }
+                } catch (error) {
+                    console.error("Error en la creación de preferencia: ", error);
+                }
+            })
+        );
 
-            const categoriaId = categoriasIds[item.categoriaId] || "";
-
-            client.models.Preferencia.create({ nombre: item.nombre, categoriaId: categoriaId }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando preferencia: ", errors);
-                console.log("Preferencia creada: ", data);
-                preferenciasIds[item.nombre] = data?.id || "";
-            });
-        })
-
-        recompensas.map((item) => {
-            client.models.Recompensa.create({ nombre: item.nombre }).then(({ data, errors }) => {
-                if (errors) console.log("Error creando recompensa: ", errors);
-                console.log("Recompensa creada: ", data);
-            });
-        })
-
-        // recompensasPreferencias.map((item) => {
-        //     client.models.RecompensaPreferencia.create({ id: item.id, preferenciaId: item.preferenciaId, recompensaId: item.recompensaId }).then(({ data, errors }) => {
-        //         if (errors) console.log("Error creando recompensa-preferencia: ", errors);
-        //         console.log("Recompensa-preferencia creada: ", data);
-        //     });
-        // })
+        console.log("Preferencias creadas: ", preferenciasIds);
 
 
+        await Promise.all(
+            recompensas.map(async (item) => {
+                try {
+                    // Creación de recompensa
+                    const { data, errors } = await client.models.Recompensa.create({ nombre: item.nombre });
+                    if (errors) {
+                        console.log("Error creando recompensa: ", errors);
+                        return;
+                    }
+
+                    console.log("Recompensa creada: ", data);
+
+                    // Obtener la imagen desde la ruta
+                    const response = await fetch("img/recompensas/" + item.img);
+                    if (!response.ok) {
+                        console.log("Error al obtener la imagen: ", response.statusText);
+                        return;
+                    }
+
+                    console.log("src: ", response);
+                    const blob = await response.blob();
+                    const file = new File([blob], item.img, { type: "image/png" });
+
+                    // Subir la imagen
+                    const uploadResponse = await uploadData({
+                        path: `images/${data?.id || ""}-${file.name}`,
+                        data: file,
+                        options: {
+                            contentType: "image/png",
+                        },
+                    }).result;
+
+                    if (!uploadResponse) {
+                        console.log("Error subiendo la imagen: ", file.name);
+                        return;
+                    }
+
+                    // Actualizar el registro de la recompensa con la ruta de la imagen
+                    const updateResponse = await client.models.Recompensa.update({
+                        id: data?.id || "",
+                        img: uploadResponse.path,
+                    });
+
+                    console.log("Recompensa actualizada con imagen: ", updateResponse);
+
+                } catch (error) {
+                    console.error("Error en la creación o actualización de recompensa: ", error);
+                }
+            })
+        );
+
+
+        //preuba de imagenes 
+
+        // const response = await fetch(`img/recompensas/2x1_alimentos_bebidas.png`);
+
+        // // Verificar que el tipo de contenido sea imagen
+        // if (!response.ok || !response.headers.get('content-type')?.includes('image')) {
+        //     console.error("Error al obtener la imagen o el archivo no es una imagen.");
+        //     return;
+        // }
+
+        // const blob = await response.blob();
+        // console.log("Blob: ", response);
 
         console.log("Seeders ejecutados");
+        // onFinalize();
 
     }
 
-    
+
 
     async function clearDatabase() {
         try {
@@ -67,7 +145,7 @@ export default function Setup() {
             //     await client.models.RecompensaPreferencia.delete({ id: recompensaPreferencia.id });
             // }
 
-            // Paso 2: Eliminar registros dependientes
+
             const { data: transacciones } = await client.models.Transaccion.list();
             for (const transaccion of transacciones) {
                 await client.models.Transaccion.delete({ id: transaccion.id });
@@ -85,27 +163,41 @@ export default function Setup() {
 
             const { data: recompensas } = await client.models.Recompensa.list();
             for (const recompensa of recompensas) {
+                if (recompensa?.img) {
+                    await remove({ path: recompensa.img });
+                }
                 await client.models.Recompensa.delete({ id: recompensa.id });
             }
 
-            // Paso 3: Eliminar el modelo principal (Categoria)
             const { data: categorias } = await client.models.Categoria.list();
             for (const categoria of categorias) {
                 await client.models.Categoria.delete({ id: categoria.id });
             }
 
             console.log("Datos eliminados exitosamente.");
+            // onFinalize();
         } catch (error) {
             console.error("Error al eliminar datos:", error);
         }
     }
 
     return (
-        <div>
-            <h1>Setup config</h1>
+        <div className={"p-5"}>
 
-            <button onClick={() => clearDatabase()}>Eliminar todo</button>
-            <button onClick={() => executeSeeders()}>Ejecutar seeders</button>
+            <h1 className="text-2xl font-bold mb-4">Setup Config</h1>
+
+            <button
+                onClick={() => clearDatabase()}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Eliminar todo
+            </button>
+            <button
+                onClick={() => executeSeeders()}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4"
+            >
+                Ejecutar seeders
+            </button>
         </div>
     )
 

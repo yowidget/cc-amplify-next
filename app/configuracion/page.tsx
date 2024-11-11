@@ -141,8 +141,6 @@ export default function Configuracion() {
     try {
       const subscription = client.models.Categoria.observeQuery().subscribe({
         next: (data) => {
-
-          console.log("Categorias", [...data.items]);
           setCategorias([...data.items])
         },
       });
@@ -155,7 +153,7 @@ export default function Configuracion() {
 
 
   function handlePreferenciaClick(id: string) {
-    client.models.Preferencia.delete({ id }).then(({errors}) => {
+    client.models.Preferencia.delete({ id }).then(({ errors }) => {
       if (errors) {
         console.error("Error al eliminar preferencia", errors);
         return;
@@ -186,17 +184,32 @@ export default function Configuracion() {
           />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Categorías Existentes:</h3>
           <div className="max-h-64 overflow-y-auto">
-            <ul className="space-y-2">
-              {categorias.map((categoria) => (
-                <li
-                  key={categoria.id}
-                  className="text-blue-600 cursor-pointer hover:underline"
-                  onClick={() => handleEliminarCategoria(categoria.id)}
-                >
-                  {categoria.nombre} - {categoria.id}
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-[400px] overflow-y-auto">
+              <ul className="space-y-2">
+                {categorias.map((categoria) => (
+                  <li
+                    key={categoria.id}
+                    className="flex justify-between items-center border-b border-gray-300 pb-2"
+                  >
+                    {/* Primera columna (70%) */}
+                    <div className="w-[70%]">
+                      <div className="text-sm font-semibold">{categoria.nombre}</div>
+                    </div>
+
+                    {/* Segunda columna (30%) */}
+                    <div className="w-[30%] flex justify-end">
+                      <button
+                        className="bg-red-600 text-white px-4 py-2 rounded-md"
+                        onClick={() => handleEliminarCategoria(categoria.id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
           </div>
         </section>
 
@@ -231,17 +244,33 @@ export default function Configuracion() {
             disabled={!preferenciaInput.trim() || !selectedCategoriaId}
           />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Preferencias Existentes:</h3>
-          <ul className="space-y-2">
-            {preferencias.map((preferencia) => (
-              <li
-                key={preferencia.id}
-                className="text-blue-600 cursor-pointer hover:underline"
-                onClick={() => handlePreferenciaClick(preferencia.id)}
-              >
-                {preferencia.nombre}
-              </li>
-            ))}
-          </ul>
+          <div className="max-h-[400px] overflow-y-auto">
+            <ul className="space-y-2">
+              {preferencias.map((preferencia) => (
+                <li
+                  key={preferencia.id}
+                  className="flex justify-between items-center border-b border-gray-300 pb-2"
+                >
+                  {/* Primera columna (70%) */}
+                  <div className="w-[70%]">
+                    <div className="text-sm font-semibold">{preferencia.nombre}</div>
+                  </div>
+
+                  {/* Segunda columna (30%) */}
+                  <div className="w-[30%] flex justify-end">
+                    <button
+                      className="bg-red-600 text-white px-4 py-2 rounded-md"
+                      onClick={() => handlePreferenciaClick(preferencia.id)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+
         </section>
       </div>
 
