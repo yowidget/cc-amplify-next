@@ -1,5 +1,20 @@
 import "./RecompensaCard.css";
+import {  getUrl } from "aws-amplify/storage";
+import { useEffect, useState } from "react";
+
 export const RecompensaCard = ({ recompensa, onOpenModal }) => {
+  const [url, setURL] = useState("");
+
+    useEffect(() => {
+      if (!recompensa.img) return;
+      getUrl({ path: recompensa.img || "" })
+        .then((result) => {
+          setURL(result?.url?.href || "");
+        })
+        .catch((error) => {
+          console.error("Error al obtener la URL de la imagen", error);
+        });
+    }, [recompensa.img]);
   return (
     <div className="recompensa-card">
       <div className="card-categorias">
@@ -13,7 +28,7 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
       <img
         // src={recompensa.imagen}
         // alt={recompensa.nombre}
-        src={recompensa.img || "https://via.placeholder.com/150"}
+        src={url || "https://via.placeholder.com/150"}
         alt={`imagen de la recompensa ${recompensa.nombre}`}
         className="recompensa-imagen"
       />
