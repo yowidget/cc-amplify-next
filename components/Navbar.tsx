@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
 
       {/* Menú desplegable para móviles */}
       {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white border-t border-capitalone-blue md:hidden z-10">
+        <div className="absolute top-full left-0 w-full bg-white border-t border-capitalone-blue md:hidden z-20">
           <div className="flex flex-col p-4 space-y-2">
             <Link href="/" className="hover:text-capitalone-red" onClick={handleLinkClick}>
               Inicio
