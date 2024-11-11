@@ -3,11 +3,10 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
     <div className="recompensa-card">
       <div className="card-categorias">
         <div className="categoria-items">
-          <span className="categoria-item">{recompensa.categoria.nombre}</span>
+          
           {/* {recompensa.categorias.map((categoria) => (
           ))} */}
         </div>
-        <button className="like-button">❤️</button>
       </div>
       <img
         // src={recompensa.imagen}
