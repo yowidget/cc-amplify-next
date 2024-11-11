@@ -174,6 +174,16 @@ export default function Setup() {
                 await client.models.Categoria.delete({ id: categoria.id });
             }
 
+            const { data: recompensaCategorias } = await client.models.RecompensaCategoria.list();
+            for (const recompensaCategoria of recompensaCategorias) {
+                await client.models.RecompensaCategoria.delete({ id: recompensaCategoria.id });
+            }
+
+            const { data: recompensaPreferencias } = await client.models.RecompensaPreferencia.list();
+            for (const recompensaPreferencia of recompensaPreferencias) {
+                await client.models.RecompensaPreferencia.delete({ id: recompensaPreferencia.id });
+            }
+
             console.log("Datos eliminados exitosamente.");
             // onFinalize();
         } catch (error) {

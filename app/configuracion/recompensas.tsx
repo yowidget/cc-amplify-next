@@ -9,8 +9,6 @@ import { uploadData, getUrl } from "aws-amplify/storage";
 const client = generateClient<Schema>();
 
 
-
-// Tipos para la recompensa y categoría
 interface Recompensa {
     id: string;
     nombre: Nullable<string>;
@@ -26,15 +24,11 @@ interface Recompensa {
 
 export default function Recompensas() {
     const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
-    // const [recompensaInput, setRecompensaInput] = useState<string>("");
     const [categorias, setCategorias] = useState<Array<Schema["Categoria"]["type"]>>([]);
 
-    //File constants
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
 
-
-    // Función para listar categorías
     function listCategorias() {
         try {
             const subscription = client.models.Categoria.observeQuery().subscribe({
@@ -47,9 +41,6 @@ export default function Recompensas() {
         }
     }
 
-
-
-    // Función para cargar recompensas
     function loadRecompensas() {
         client.models.Recompensa.list({
             selectionSet: ["id", "nombre", "detalles", "categoria.*", "img"],
@@ -59,7 +50,6 @@ export default function Recompensas() {
         });
     }
 
-    // Función para cambiar la categoría de una recompensa
     function handleRecompensaCategoriaChange(id: string, categoriaId: string) {
         client.models.Recompensa.update({ id, categoriaId })
             .then(() => {
@@ -68,7 +58,6 @@ export default function Recompensas() {
             .catch((e) => console.error(`Error al actualizar la recompensa ${id}`, e));
     }
 
-    // Función para eliminar recompensa
     function handleEliminarRecompensa(id: string) {
         client.models.Recompensa.get({ id }).then(({ data }) => {
             if (!data) return console.error("Recompensa no encontrada");
@@ -86,12 +75,23 @@ export default function Recompensas() {
         });
     }
 
-
     const CreateRecompensa: React.FC = () => {
         const [recompensaName, setRecompensaName] = useState("");
         const [recompensaDetails, setRecompensaDetails] = useState("");
         const [file, setFile] = useState<File | null>(null); // Estado para el archivo
         const [imagePreview, setImagePreview] = useState<string>("");
+        const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Estado para categorías seleccionadas
+        const [categories, setCategories] = useState<{ id: string, nombre: string }[]>([]); // Estado para las categorías disponibles
+
+        useEffect(() => {
+            // Suponemos que las categorías disponibles se obtienen desde un API o base de datos
+            const fetchCategories = async () => {
+                const response = await client.models.Categoria.list(); // Método para obtener todas las categorías
+                setCategories(response.data);
+            };
+
+            fetchCategories();
+        }, []);
 
         const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             const selectedFile = event.target.files ? event.target.files[0] : null;
@@ -99,6 +99,16 @@ export default function Recompensas() {
                 setFile(selectedFile);
                 setImagePreview(URL.createObjectURL(selectedFile));
             }
+        };
+
+        const handleCategorySelect = (categoryId: string) => {
+            if (!selectedCategories.includes(categoryId)) {
+                setSelectedCategories([...selectedCategories, categoryId]);
+            }
+        };
+
+        const handleCategoryRemove = (categoryId: string) => {
+            setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
         };
 
         async function createRecompensaFromInput() {
@@ -118,11 +128,25 @@ export default function Recompensas() {
                         data: file,
                         options: { contentType: file.type },
                     }).result;
-
+                    
                     await client.models.Recompensa.update({
                         id: recompensa.id,
-                        img: result?.path,
+                        img: result?.path
                     });
+
+                    // Crear relaciones de categorías
+
+                    selectedCategories.forEach((categoryId) => {
+                        client.models.RecompensaCategoria.create({
+                            recompensaId: recompensa.id,
+                            categoriaId: categoryId,
+                        }).then(() => {
+                            console.log(`Categoría ${categoryId} asignada a la recompensa ${recompensa.id}`);
+                        }).catch((e) => {
+                            console.error(`Error al asignar la categoría ${categoryId} a la recompensa ${recompensa.id}`, e);
+                        });
+                    })
+                    
                 }
             } catch (error) {
                 console.error(`Error al crear la recompensa ${recompensaName}`, error);
@@ -130,39 +154,21 @@ export default function Recompensas() {
                 loadRecompensas();
                 setRecompensaName("");
                 setRecompensaDetails("");
-                setFile(null); // Resetea el archivo
-                setImagePreview(""); // Borra la vista previa
+                setFile(null);
+                setImagePreview("");
+                setSelectedCategories([]); // Limpiamos las categorías seleccionadas
             }
         }
 
-        async function test() {
-            // const response = await fetch(`img/recompensas/2x1_alimentos_bebidas.png`);
-
-            const response = await fetch(`img/recompensas/2x1_alimentos_bebidas.png`);
-
-            // Verifica que la respuesta sea correcta y que el contenido sea una imagen
-            if (!response.ok || !response.headers.get("content-type")?.includes("image")) {
-                console.error("Error al obtener la imagen o el archivo no es una imagen.");
-                return;
-            }
-
-            // Convierte la respuesta a blob y luego a File
-            const blob = await response.blob();
-            const fetchedFile = new File([blob], "imagen.png", { type: blob.type });
-
-            // Actualiza el estado con el archivo obtenido
-            setFile(fetchedFile);
-
-            // Crea la URL de vista previa y actualiza el estado imagePreview
-            const previewUrl = URL.createObjectURL(fetchedFile);
-            setImagePreview(previewUrl);
+        function test(){
+            client.models.RecompensaCategoria.list().then(({ data }) => {
+                console.log(data);
+            });
         }
 
         return (
-
             <div className="p-6 bg-white shadow-md rounded-lg">
-                <button onClick={() => test()}>test</button>
-
+            {/* <button onClick={()=>test()}>Recargar</button> */}
                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Agregar Recompensas</h2>
                 <input
                     type="text"
@@ -183,15 +189,51 @@ export default function Recompensas() {
                     onChange={handleFileChange}
                     className="mb-4 text-sm"
                 />
-                {
-                    imagePreview && (
-                        <img
-                            src={imagePreview}
-                            alt="Vista previa de la imagen"
-                            className="w-full h-32 object-cover rounded-lg mb-4"
-                        />
-                    )
-                }
+                {imagePreview && (
+                    <img
+                        src={imagePreview}
+                        alt="Vista previa de la imagen"
+                        className="w-full h-32 object-cover rounded-lg mb-4"
+                    />
+                )}
+
+                <div className="mb-4">
+                    <h3 className="font-bold text-gray-800">Seleccionar Categorías</h3>
+                    <select
+                        onChange={(e) => handleCategorySelect(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="">Seleccionar Categoría</option>
+                        {categories.map((categoria) => (
+                            <option key={categoria.id} value={categoria.id}>
+                                {categoria.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="mb-4">
+                    <h3 className="font-bold text-gray-800">Categorías Seleccionadas</h3>
+                    <ul className="space-y-2">
+                        {selectedCategories.map((categoryId) => {
+                            const category = categories.find(c => c.id === categoryId);
+                            return (
+                                category && (
+                                    <li key={categoryId} className="flex justify-between items-center">
+                                        <span>{category.nombre}</span>
+                                        <button
+                                            onClick={() => handleCategoryRemove(categoryId)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </li>
+                                )
+                            );
+                        })}
+                    </ul>
+                </div>
+
                 <button
                     onClick={createRecompensaFromInput}
                     disabled={!recompensaDetails.trim()}
@@ -199,23 +241,20 @@ export default function Recompensas() {
                 >
                     Crear
                 </button>
-            </div >
+            </div>
         );
     };
+
 
     useEffect(() => {
         loadRecompensas();
         listCategorias();
     }, []);
 
-
-
-    // Propiedades de cada recompensa
     interface RecompensaItemProps {
         recompensa: Recompensa;
     }
 
-    // Componente de elemento de recompensa
     const RecompensaItem = ({ recompensa }: RecompensaItemProps) => {
         const [url, setURL] = useState<string>("");
 
@@ -263,13 +302,15 @@ export default function Recompensas() {
             </div>
             <div className="space-y-6">
                 <h3 className="text-3xl font-bold text-gray-900 mb-6">Recompensas existentes:</h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {recompensas.map((recompensa) => (
-                        <li key={recompensa.id}>
-                            <RecompensaItem recompensa={recompensa} />
-                        </li>
-                    ))}
-                </ul>
+                <div className="overflow-y-auto max-h-[400px]">
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {recompensas.map((recompensa) => (
+                            <li key={recompensa.id}>
+                                <RecompensaItem recompensa={recompensa} />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </section>
     );
