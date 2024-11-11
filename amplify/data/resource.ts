@@ -90,8 +90,6 @@ const schema = a
       .model({
         nombre: a.string(),
         detalles: a.string(),
-        categoriaId: a.id(),
-        categoria: a.belongsTo("Categoria", "categoriaId"),
         img: a.string(),
         location: a.customType({
           lat: a.float().required(),
