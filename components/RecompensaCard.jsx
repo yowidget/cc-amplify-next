@@ -15,6 +15,7 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
           console.error("Error al obtener la URL de la imagen", error);
         });
     }, [recompensa.img]);
+    
   return (
     <div className="recompensa-card">
       <div className="card-categorias">
@@ -23,7 +24,6 @@ export const RecompensaCard = ({ recompensa, onOpenModal }) => {
           {/* {recompensa.categorias.map((categoria) => (
           ))} */}
         </div>
-       
       </div>
       <img
         // src={recompensa.imagen}

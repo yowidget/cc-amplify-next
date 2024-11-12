@@ -412,9 +412,6 @@ export default function Recompensas() {
     );
   };
 
-
-
-
   useEffect(() => {
     loadRecompensas();
     listCategorias();
