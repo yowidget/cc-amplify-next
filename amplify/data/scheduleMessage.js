@@ -43,8 +43,8 @@ export function response(ctx) {
 	console.log('parsedBody', parsedBody)
 	if (parsedBody.error) {
 		runtime.earlyReturn({
-			message: `error scheduling message, ${JSON.stringify(parsedBody)}`,
+			message: `error scheduling message, ${JSON.stringify(ctx)}`,
 		})
 	}
-	return { message: `message successfully scheduled, ${JSON.stringify(parsedBody)}` }
+	return { message: `message successfully scheduled, ${JSON.stringify(ctx)}` }
 }
