@@ -12,25 +12,12 @@ Amplify.configure(outputs);
 
 import { RecompensaCard } from "./RecompensaCard";
 
-const client = generateClient<Schema>();
-
 export default function RecompensasSugeridas() {
-  const [categoriasId, setCategoriasIds] = useState<string[]>([]);
   const [recompensas, setRecompensas] = useState<
     Array<{
       id: string;
       nombre: string;
       img: string;
-    }>
-  >([]);
-  const [preferenciasDeclaradas, setPreferenciasDeclaradas] = useState<
-    Array<{
-      id: string;
-      categoriaId: string;
-      nombre: string;
-      categoria: {
-        nombre: string;
-      };
     }>
   >([]);
 
@@ -44,22 +31,21 @@ export default function RecompensasSugeridas() {
     setSelectedRecompensa(null);
   };
 
-  const { user, signOut } = useAuthenticator();
-
   useEffect(() => {
     getRecompensasSugeridas().then((data) => {
       if (data) {
         setRecompensas(data);
       }
     });
-
   }, []);
 
   return (
     <>
       <section className="py-4 text-center">
         <h3 className="text-3xl mb-4">Venture X te da mucho más</h3>
-        <p className="text-lg mb-4">Disfruta de los beneficios que te da tu tarjeta</p>
+        <p className="text-lg mb-4">
+          Disfruta de los beneficios que te da tu tarjeta
+        </p>
 
         {/* Mostrar invitación si no hay preferencias declaradas */}
         {recompensas.length === 0 ? (
@@ -85,9 +71,27 @@ export default function RecompensasSugeridas() {
           </div>
         )}
 
-        <div className="flex justify-end items-end">
-          <Link href="/recompensas" className="underline text-blue-600 hover:text-blue-800 my-2">
-            Ver Todas Las Recompensas
+        <div className="flex justify-between p-4">
+          {recompensas.length != 0 ? (
+            <Link
+              href="/preferencias"
+              className="underline text-blue-600 hover:text-blue-800 my-2"
+            >
+              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                Establecer Preferencias
+              </button>
+            </Link>
+          ) : (
+            ""
+          )}
+
+          <Link
+            href="/recompensas"
+            className="underline text-blue-600 hover:text-blue-800 my-2"
+          >
+            <button className=" border-2 border-capitalone-indigo text-capitalone-indigo px-4 py-2 rounded hover:bg-capitalone-indigo hover:text-white transition">
+              Ver Todas Las Recompensas
+            </button>
           </Link>
         </div>
       </section>
@@ -102,8 +106,12 @@ export default function RecompensasSugeridas() {
             >
               &times;
             </button>
-            <h3 className="text-2xl font-bold mb-2">{selectedRecompensa.nombre}</h3>
-            <p className="text-gray-700 mb-4">{selectedRecompensa.categoria.nombre}</p>
+            <h3 className="text-2xl font-bold mb-2">
+              {selectedRecompensa.nombre}
+            </h3>
+            <p className="text-gray-700 mb-4">
+              {selectedRecompensa.categoria.nombre}
+            </p>
             <p className="text-gray-600">{selectedRecompensa.terminos}</p>
             <div className="mt-4 flex justify-end">
               <button
