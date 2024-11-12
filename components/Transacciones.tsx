@@ -54,7 +54,7 @@ export default function Transacciones({
       .map((item) => transaccionesArray.push(item))
       .filter(Boolean);
     console.log("transaccion", { transaccionesArray });
-    client.queries
+    await client.queries
       .categorize({ prompt: transaccionesArray })
       .then(
         async ({
