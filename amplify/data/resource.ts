@@ -56,6 +56,7 @@ const schema = a
       .model({
         nombre: a.string().required(),
         preferencias: a.hasMany("Preferencia", "categoriaId"),
+        recompensas: a.hasMany("Recompensa", "categoriaId"),
         preferenciasDeclaradas: a.hasMany(
           "PreferenciaDeclarada",
           "categoriaId"
@@ -88,6 +89,8 @@ const schema = a
 
     Recompensa: a
       .model({
+        categoriaId: a.string(),
+        categoria: a.belongsTo("Categoria", "categoriaId"),
         nombre: a.string(),
         detalles: a.string(),
         img: a.string(),

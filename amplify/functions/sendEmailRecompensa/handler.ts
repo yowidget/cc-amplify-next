@@ -102,11 +102,12 @@ export const handler = async (event: {
   const client = generateClient<Schema>({
     authMode: "iam",
   });
-
+  console.log("client", client);
   const { data } = await client.graphql({
     query: getTransaccion,
     variables: { id: event.transaccionId },
   });
+  console.log("data", data);
   const recompensas = await client.graphql({
     query: listRecompensas,
 
@@ -114,6 +115,7 @@ export const handler = async (event: {
     //   filter: { categoriaId: { eq: data?.getTransaccion?.categoriaId } },
     // },
   });
+  console.log("recompensas", recompensas);
   const nombreRecompensas = recompensas.data?.listRecompensas?.items.map(
     (recompensa) => recompensa?.nombre
   );
