@@ -9,6 +9,7 @@ import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import Home from "../components/Home";
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <div className="flex flex-col">
       <h1>Bienvenido de vuelta {user?.signInDetails?.loginId}</h1>
+      <Home />
       <RecompensasSugeridas />
       <Transacciones client={client} user={user} />
     </div>
