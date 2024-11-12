@@ -11,6 +11,7 @@ import getRecompensasSugeridas from "@/src/functions/getRecompensasSugeridas";
 Amplify.configure(outputs);
 
 import { RecompensaCard } from "../../components/RecompensaCard";
+import '../../components/RecompensaCard.css';
 
 const client = generateClient<Schema>();
 
@@ -194,17 +195,20 @@ export default function MisRecompensas() {
 
       <section id="recompensas-para-ti" className="seccion-recompensas mt-8">
         <h3 className="mb-4">Recompensas para ti</h3>
+          <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+          }}
+          className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {recompensasSugeridas.length > 0 ? (
             recompensasSugeridas.map((recompensa) => (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
               <RecompensaCard
                 key={recompensa.id}
                 recompensa={recompensa}
                 onOpenModal={handleOpenModal}
               />
-        </div>
-
             ))
           ) : (
             <div className="bg-gray-100 p-6 rounded-lg shadow-md text-center">
@@ -213,11 +217,17 @@ export default function MisRecompensas() {
             </h4>
           </div>
           )}
+        </div>
       </section>
 
       <section className="seccion-recompensas mt-8">
         <h3 className="mb-4">Recompensas Todas</h3>
-        <div>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+          }}        
+        >
           {
           categoriasConRecompensas.length > 0 ? (
           categoriasConRecompensas.map((categoriaNombre) => (
