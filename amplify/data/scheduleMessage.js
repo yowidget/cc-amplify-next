@@ -1,5 +1,5 @@
 import { util, runtime } from '@aws-appsync/utils'
-
+import Home from "../components/Home";
 
 
 export function request(ctx) {
