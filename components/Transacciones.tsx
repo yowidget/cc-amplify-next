@@ -29,12 +29,24 @@ export default function Transacciones({
       };
     }[]
   >([]);
-
+  const [finantialAdvise, setFinantialAdvise] = useState<string>("");
   const [transaccionInput, setTransaccionInput] = useState<string>("");
 
   useEffect(() => {
     loadTransacciones();
+    loadFinantialAdvise();
   }, []);
+
+  async function loadFinantialAdvise() {
+    if (transacciones.length < 5) return;
+    const { data, errors } = await client.queries.FinantialAdvise({
+      prompt: JSON.stringify(transacciones)
+    });
+    if (errors)
+      throw console.error("Error al obtener las transacciones", errors);
+    
+    setFinantialAdvise(data[0].text);
+  }
 
   async function loadTransacciones() {
     const { data, errors } = await client.models.Transaccion.list({
@@ -156,6 +168,13 @@ export default function Transacciones({
               {isSending ? "Enviando..." : "Agregar"}
             </button>
           </div>
+
+          <section className="bg-white p-6 mt-6 rounded-md shadow-md">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Financial Advise</h2>
+            <p className="text-gray-600 text-base">
+              {!finantialAdvise ? ("Realiza al menos 5 transacciones para recibir un financial advise") : finantialAdvise}
+            </p>
+          </section>
 
           <h2 className=" text-lg font-bold my-4">Compras registradas</h2>
           <div className="max-h-80 overflow-y-auto border border-gray-300 rounded-md shadow-sm">
