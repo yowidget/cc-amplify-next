@@ -14,6 +14,7 @@ import {
 import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
 import { sendEmailRecompensa } from "./functions/sendEmailRecompensa/resource";
 import { recompensaAnalizer } from "./functions/recompensaAnalizer/resource";
+import { financialWellness } from "./functions/financialWellness/resource";
 import { data, MODEL_ID, categorizeFunction } from "./data/resource.js";
 
 //DynamoDbStream
@@ -29,7 +30,8 @@ const backend = defineBackend({
   myDynamoDBFunction,
   sendEmailRecompensa,
   categorizeFunction,
-  recompensaAnalizer
+  recompensaAnalizer,
+  financialWellness
 });
 
 backend.sendEmailRecompensa.resources.lambda.addToRolePolicy(
@@ -47,6 +49,14 @@ backend.sendEmailRecompensa.resources.lambda.addToRolePolicy(
 );
 
 backend.categorizeFunction.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["bedrock:InvokeModel"],
+    resources: [`arn:aws:bedrock:*::foundation-model/${MODEL_ID}`],
+  })
+);
+
+backend.financialWellness.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ["bedrock:InvokeModel"],
